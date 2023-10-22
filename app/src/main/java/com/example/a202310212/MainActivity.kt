@@ -24,20 +24,26 @@ class MainActivity: ComponentActivity()
         super.onCreate(savedInstanceState)
         prefs = Prefs(applicationContext)
         instance = this
-        val dataCurrent = listOf(perDayEntry(1,"Test1"), perDayEntry(2,"test2"))
-        val jsontest = JSON.writeValueAsString(dataCurrent)
-        prefs!!.mainData = jsontest
-        val fromjsonpref = prefs!!.mainData
-        val backToList: List<perDayEntry> = JSON.readValue(fromjsonpref!!)
-        Log.d("TEST2", backToList.toString())
-        addData(prefs!!, "Hello",0)
-        prefs!!.mainData?.let { Log.d("TEST", it) }
+        addData(prefs!!,"newitem",2)
+        Log.d("test3",readData(prefs!!).toString())
+        removeData(prefs!!,"hello",1)
+        Log.d("test3",readData(prefs!!).toString())
     }
 }
 
+fun readData(prefs: Prefs): MutableList<perDayEntry> {
+    return JSON.readValue(prefs.mainData!!)
+}
+
+fun removeData(prefs: Prefs, item: String, day:Int) {
+    var entries = readData(prefs)
+    entries.remove(perDayEntry(day,item))
+    prefs.mainData = JSON.writeValueAsString(entries)
+}
 
 fun addData(prefs: Prefs, item: String, day: Int) {
-    val pref = prefs.mainData
-    val prefnew = pref.plus(".-.").plus(day.toString()).plus(".").plus(item)
-    prefs.mainData = prefnew
+    var entries = readData(prefs)
+    entries.add(perDayEntry(day,item))
+    prefs.mainData = JSON.writeValueAsString(entries)
+
 }
