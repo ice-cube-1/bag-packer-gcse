@@ -1,5 +1,6 @@
 package com.example.a202310212
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,7 @@ import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,15 +68,16 @@ fun homeScreen(modifier: Modifier = Modifier, prefs: Prefs, navigation: NavContr
     var goaddtask by remember { mutableStateOf(false) }
     var goviewlist by remember { mutableStateOf(false) }
     if (goviewlist) {
-        navigation.navigate("displayTasks")
-    }
+        LaunchedEffect(Unit) {
+            navigation.navigate("displayTasks")
+        }    }
     if (goaddtask) {
-        navigation.navigate("addTask")
-    }
+        LaunchedEffect(Unit) {
+            navigation.navigate("addTask")
+        }    }
     Column(modifier = Modifier.padding(16.dp)) {
         homeOptions(
             AddTask = {
-                addData(prefs,"",1,false)
                 goaddtask = true
             },
             ViewList = {
@@ -117,11 +120,15 @@ fun addTask(prefs: Prefs, navigation: NavController,modifier: Modifier = Modifie
     var goHome by remember { mutableStateOf(false) }
     var taskValue by remember { mutableStateOf("") }
     if (goHome) {
-        navigation.navigate("homeScreen")
+        if (taskValue != "") {
+            addData(prefs,taskValue,1,false)
+        }
+        LaunchedEffect(Unit) {
+            navigation.navigate("homeScreen")
+        }
     }
     addTaskOptions(taskValue = taskValue, taskName = {
         taskValue = it
-        editRecentItem(prefs,taskValue)
     }, submit = {
         goHome = true
     }
@@ -163,9 +170,16 @@ fun backButton(
 @Composable
 fun displayTasks(prefs: Prefs, modifier: Modifier = Modifier, navigation: NavController) {
     var goHome by remember { mutableStateOf(false) }
+    var removable by remember { mutableStateOf(mutableListOf<perDayEntry>()) }
     var tasks = readData(prefs)
     if (goHome) {
-        navigation.navigate("homeScreen")
+        Log.d("back tests",removable.toString())
+        for (i in removable) {
+            removeData(prefs, i.day, i.completed,i.item)
+        }
+        LaunchedEffect(Unit) {
+            navigation.navigate("homeScreen")
+        }
     }
     Column(modifier = modifier.padding(16.dp)) {
         for (i in tasks) {
@@ -180,15 +194,16 @@ fun displayTasks(prefs: Prefs, modifier: Modifier = Modifier, navigation: NavCon
                     },
                     onClose = {
                     showTask = false
-                    removeData(prefs,i.day,i.completed,i.item)
+                    //removeData(prefs,i.day,i.completed,i.item)
+                        removable.add(i)
+                        Log.d("more tests",removable.toString())
                 })
             }
         }
         backButton(onPress = {
             goHome = true
         })
-    }
-}
+    } }
 
 fun readData(prefs: Prefs): MutableList<perDayEntry> {
     return JSON.readValue(prefs.mainData!!)
@@ -213,8 +228,9 @@ fun editRecentItem(prefs: Prefs, newItem: String) {
 }
 
 fun addData(prefs: Prefs, item: String, day: Int, completed: Boolean) {
-    val entries = readData(prefs)
+    var entries = readData(prefs)
     entries.add(perDayEntry(day,item, completed))
+    entries = entries.distinct().toMutableList()
     prefs.mainData = JSON.writeValueAsString(entries)
 
 }
