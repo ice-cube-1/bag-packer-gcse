@@ -1,8 +1,14 @@
 package com.example.a202310212
+import android.annotation.SuppressLint
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -23,13 +29,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import java.util.Calendar
+import java.util.Timer
+import java.util.TimerTask
 
 var currentday = Math.floorMod((Calendar.getInstance().get(Calendar.DAY_OF_WEEK)-2),7)
 
@@ -45,11 +57,48 @@ class MainActivity: ComponentActivity()
         lateinit var instance: MainActivity
             private set
     }
+    private val locationPermissionGranted = mutableStateOf(false)
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+
+    @SuppressLint("MissingPermission")
+    @RequiresApi(Build.VERSION_CODES.S)
+
     override fun onCreate(savedInstanceState: Bundle?) {
+
         Log.d("initday", currentday.toString())
         super.onCreate(savedInstanceState)
         prefs = Prefs(applicationContext)
         instance = this
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "testName"
+            val descriptionText = "testDescription"
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel("testChannel", name, importance).apply {
+                description = descriptionText
+            }
+            // Register the channel with the system.
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        var builder = NotificationCompat.Builder(this, "testChannel")
+            .setSmallIcon(R.drawable.notification_icon)
+            .setContentTitle("Notification title")
+            .setContentText("Notification text")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+        with(NotificationManagerCompat.from(this)) {
+            // notificationId is a unique int for each notification that you must define.
+            notify(0, builder.build())
+
+        }
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        Timer().scheduleAtFixedRate( object : TimerTask() {
+            override fun run() {
+                getLocation(fusedLocationClient)
+            }
+        }, 0, 1000)
         //addData(prefs!!,"item1",2,false)
         //addData(prefs!!,"item3",2,false)
         setContent {
@@ -71,6 +120,15 @@ class MainActivity: ComponentActivity()
             }
             }
         }
+
+@SuppressLint("MissingPermission")
+fun getLocation(fusedLocationClient: FusedLocationProviderClient) {
+    fusedLocationClient.lastLocation.addOnSuccessListener {
+        Log.d("LOCATION222", listOf(it.latitude, it.longitude).toString())
+    }
+
+
+}
 
 @Composable
 fun homeScreen(modifier: Modifier = Modifier, prefs: Prefs, navigation: NavController) {
