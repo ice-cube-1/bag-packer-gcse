@@ -1,5 +1,6 @@
 package com.example.a202310212
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
@@ -27,11 +28,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import java.util.Calendar
 
+var currentday = Math.floorMod((Calendar.getInstance().get(Calendar.DAY_OF_WEEK)-2),7)
 
 data class perDayEntry(var day: Int, var item: String, var completed: Boolean)
 val JSON = jacksonObjectMapper()
 val daysOfWeek = listOf<String>("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday")
+
 
 class MainActivity: ComponentActivity()
 {
@@ -41,6 +45,7 @@ class MainActivity: ComponentActivity()
             private set
     }
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d("initday", currentday.toString())
         super.onCreate(savedInstanceState)
         prefs = Prefs(applicationContext)
         instance = this
@@ -52,8 +57,11 @@ class MainActivity: ComponentActivity()
                     composable("homeScreen") {
                         homeScreen(prefs = prefs!!, navigation = navController)
                     }
-                    composable("displayTasks") {
-                        displayTasks(prefs = prefs!!, navigation = navController)
+                    composable("displayTasks/{dayToDisplay}") { backStackEntry ->
+                        val dayToDisplay = backStackEntry.arguments?.getString("dayToDisplay")
+                        Log.d("stuffithink", dayToDisplay.toString())
+                        val newday = dayToDisplay!!.toInt()
+                        displayTasks(prefs = prefs!!, navigation = navController, day = newday)
                     }
                     composable("addTask") {
                         addTask(prefs = prefs!!, navigation = navController)
@@ -67,9 +75,10 @@ class MainActivity: ComponentActivity()
 fun homeScreen(modifier: Modifier = Modifier, prefs: Prefs, navigation: NavController) {
     var goaddtask by remember { mutableStateOf(false) }
     var goviewlist by remember { mutableStateOf(-1) }
+    confirmUncheck(prefs, Math.floorMod(currentday-1,7))
     if (goviewlist != -1) {
         LaunchedEffect(Unit) {
-            navigation.navigate("displayTasks")
+            navigation.navigate("displayTasks/{daytogo}".replace(oldValue = "{daytogo}", newValue = goviewlist.toString()))
         }    }
     if (goaddtask) {
         LaunchedEffect(Unit) {
@@ -185,10 +194,10 @@ fun backButton(
 }
 
 @Composable
-fun displayTasks(prefs: Prefs, modifier: Modifier = Modifier, navigation: NavController) {
+fun displayTasks(prefs: Prefs, modifier: Modifier = Modifier, navigation: NavController, day: Int) {
     var goHome by remember { mutableStateOf(false) }
     var removable by remember { mutableStateOf(mutableListOf<perDayEntry>()) }
-    var tasks = readData(prefs)
+    var tasks = readDataForDay(prefs,day)
     if (goHome) {
         for (i in removable) {
             removeData(prefs, i.day, i.completed,i.item)
@@ -198,6 +207,7 @@ fun displayTasks(prefs: Prefs, modifier: Modifier = Modifier, navigation: NavCon
         }
     }
     Column(modifier = modifier.padding(16.dp)) {
+        Text(text= daysOfWeek[day])
         for (i in tasks) {
             var showTask by remember { mutableStateOf(true) }
             var checked by remember { mutableStateOf(i.completed)}
@@ -218,6 +228,16 @@ fun displayTasks(prefs: Prefs, modifier: Modifier = Modifier, navigation: NavCon
             goHome = true
         })
     } }
+
+fun confirmUncheck(prefs: Prefs, day: Int) {
+    var entries = readData(prefs)
+    for (i in 0..entries.size-1) {
+        if (entries[i].day == day) {
+            entries[i].completed=false
+        }
+    }
+    prefs.mainData = JSON.writeValueAsString(entries)
+}
 
 fun readData(prefs: Prefs): MutableList<perDayEntry> {
     return JSON.readValue(prefs.mainData!!)
