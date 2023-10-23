@@ -35,6 +35,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.a202310212.MainActivity.Companion.fusedLocationClient
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -51,19 +52,17 @@ val daysOfWeek = listOf<String>("Monday","Tuesday","Wednesday","Thursday","Frida
 class MainActivity: ComponentActivity()
 {
     companion object {
+        lateinit var fusedLocationClient: FusedLocationProviderClient
         var prefs: Prefs? = null
         lateinit var instance: MainActivity
             private set
     }
-    private val locationPermissionGranted = mutableStateOf(false)
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
-
     @SuppressLint("MissingPermission")
     @RequiresApi(Build.VERSION_CODES.S)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         prefs = Prefs(applicationContext)
         instance = this
         val currentday = Math.floorMod((Calendar.getInstance().get(Calendar.DAY_OF_WEEK)-2),7)
@@ -90,14 +89,12 @@ class MainActivity: ComponentActivity()
             .setContentText("You have not marked everything as packed.")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         Timer().scheduleAtFixedRate( object : TimerTask() {
             override fun run() {
-                getLocation(fusedLocationClient) { latitude, longitude ->
-                    var homeLat = 1.1
-                    var homeLong = 1.2
-                    if ((homeLat != latitude) && (homeLong!=longitude) && (!prefs!!.remindedToday) && (stillToDo(
-                            prefs!!, prefs!!.currentDay))) {
+                getLocation() { latitude, longitude ->
+                    if ((kotlin.math.abs(prefs!!.latitude.toDouble() - latitude) > 0.0025) &&
+                        (kotlin.math.abs(prefs!!.longitude.toDouble() - longitude) > 0.0025)
+                        && (stillToDo(prefs!!, prefs!!.currentDay))) {
                         with(NotificationManagerCompat.from(this@MainActivity)) {
                             notify(0,builder.build())
                         }
@@ -116,7 +113,6 @@ class MainActivity: ComponentActivity()
                     }
                     composable("displayTasks/{dayToDisplay}") { backStackEntry ->
                         val dayToDisplay = backStackEntry.arguments?.getString("dayToDisplay")
-                        Log.d("stuffithink", dayToDisplay.toString())
                         val newday = dayToDisplay!!.toInt()
                         displayTasks(prefs = prefs!!, navigation = navController, day = newday)
                     }
@@ -129,7 +125,7 @@ class MainActivity: ComponentActivity()
         }
 
 @SuppressLint("MissingPermission")
-fun getLocation(fusedLocationClient: FusedLocationProviderClient, callback: (Double, Double) -> Unit) {
+fun getLocation(callback: (Double, Double) -> Unit) {
     fusedLocationClient.lastLocation.addOnSuccessListener { location ->
         if (location != null) {
             val lat = location.latitude
@@ -154,6 +150,16 @@ fun homeScreen(modifier: Modifier = Modifier, prefs: Prefs, navigation: NavContr
             navigation.navigate("addTask")
         }    }
     Column(modifier = Modifier.padding(16.dp)) {
+        Button(onClick = {
+            getLocation() { latitude, longitude ->
+                prefs.latitude = latitude.toFloat()
+                prefs.longitude = longitude.toFloat()
+            }
+            Log.d(prefs.latitude.toString(),prefs.longitude.toString())
+        }
+        ) {
+            Text("Set Home Location")
+        }
         addtaskButton(
             AddTask = {
                 goaddtask = true
