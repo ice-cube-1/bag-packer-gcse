@@ -224,7 +224,7 @@ fun displayTasks(prefs: Prefs, modifier: Modifier = Modifier, navigation: NavCon
                         i.completed = it
                     },
                     onClose = {
-                    showTask = false
+                        showTask = false
                         removable.add(i)
                 })
             }
