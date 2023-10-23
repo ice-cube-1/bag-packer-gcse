@@ -10,6 +10,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.Checkbox
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
@@ -32,7 +33,7 @@ import java.util.Calendar
 
 var currentday = Math.floorMod((Calendar.getInstance().get(Calendar.DAY_OF_WEEK)-2),7)
 
-data class perDayEntry(var day: Int, var item: String, var completed: Boolean)
+data class perDayEntry(var day: Int, var item: String, var completed: Boolean, var recurring: Boolean)
 val JSON = jacksonObjectMapper()
 val daysOfWeek = listOf<String>("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday")
 
@@ -127,12 +128,13 @@ fun addTaskOptions(
 fun addTask(prefs: Prefs, navigation: NavController,modifier: Modifier = Modifier) {
     var goHome by remember { mutableStateOf(false) }
     var taskValue by remember { mutableStateOf("") }
+    var recurringValue by remember { mutableStateOf(true) }
     var checkedState by remember { mutableStateOf(mutableListOf<Boolean>(false,false,false,false,false,false,false))}
     if (goHome) {
         if (taskValue != "") {
             for (i in 0..6) {
                 if (checkedState[i]) {
-                    addData(prefs,taskValue,i,false)
+                    addData(prefs,taskValue,i,false,recurringValue)
                 }
             }
         }
@@ -150,6 +152,9 @@ fun addTask(prefs: Prefs, navigation: NavController,modifier: Modifier = Modifie
                 })
                 Text(text = daysOfWeek[i], modifier = Modifier.padding(16.dp))
             }
+        }
+        Row {
+            Switch(checked = recurringValue, onCheckedChange = {recurringValue = it})
         }
 
         addTaskOptions(taskValue = taskValue, taskName = {
@@ -200,7 +205,7 @@ fun displayTasks(prefs: Prefs, modifier: Modifier = Modifier, navigation: NavCon
     var tasks = readDataForDay(prefs,day)
     if (goHome) {
         for (i in removable) {
-            removeData(prefs, i.day, i.completed,i.item)
+            removeData(prefs, i.day, i.completed,i.item, i.recurring)
         }
         LaunchedEffect(Unit) {
             navigation.navigate("homeScreen")
@@ -236,7 +241,13 @@ fun confirmUncheck(prefs: Prefs, day: Int) {
             entries[i].completed=false
         }
     }
-    prefs.mainData = JSON.writeValueAsString(entries)
+    var newentries = mutableListOf<perDayEntry>()
+    for (i in entries) {
+        if ((i.day != day) or (i.recurring)) {
+            newentries.add(i)
+        }
+    }
+    prefs.mainData = JSON.writeValueAsString(newentries)
 }
 
 fun readData(prefs: Prefs): MutableList<perDayEntry> {
@@ -249,21 +260,16 @@ fun changeCompletion(prefs: Prefs,toChange: perDayEntry) {
     prefs.mainData = JSON.writeValueAsString(entries)
 }
 
-fun removeData(prefs: Prefs, day: Int, completed: Boolean, item: String) {
+fun removeData(prefs: Prefs, day: Int, completed: Boolean, item: String, recurring: Boolean) {
     val entries = readData(prefs)
-    entries.remove(perDayEntry(day,item,completed))
+    entries.remove(perDayEntry(day,item,completed,recurring))
     prefs.mainData = JSON.writeValueAsString(entries)
 }
 
-fun editRecentItem(prefs: Prefs, newItem: String) {
+fun addData(prefs: Prefs, item: String, day: Int, completed: Boolean,recurring: Boolean) {
     var entries = readData(prefs)
-    entries[entries.indexOf(entries.last())].item = newItem
-    prefs.mainData = JSON.writeValueAsString(entries)
-}
-
-fun addData(prefs: Prefs, item: String, day: Int, completed: Boolean) {
-    var entries = readData(prefs)
-    entries.add(perDayEntry(day,item, completed))
+    entries.add(perDayEntry(day,item, completed, recurring))
+    Log.d("added",perDayEntry(day,item,completed,recurring).toString())
     entries = entries.distinct().toMutableList()
     prefs.mainData = JSON.writeValueAsString(entries)
 
