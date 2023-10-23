@@ -5,8 +5,16 @@ import android.content.SharedPreferences
 
 class Prefs (context: Context) {
     private val preferences: SharedPreferences = context.getSharedPreferences("1", Context.MODE_PRIVATE)
-    private var stringPref = "allData"
+    private var alldatapref = "allData"
+    private  var daypref = "currentDayStuff"
+    private var boolpref = "ReminderStuff"
     var mainData: String?
-        get() = preferences.getString(stringPref, JSON.writeValueAsString(listOf<perDayEntry>()))
-        set(value) = preferences.edit().putString(stringPref, value).apply()
+        get() = preferences.getString(alldatapref, JSON.writeValueAsString(listOf<perDayEntry>()))
+        set(value) = preferences.edit().putString(alldatapref, value).apply()
+    var currentDay: Int
+        get() = preferences.getInt(daypref,0)
+        set(value) = preferences.edit().putInt(daypref,value).apply()
+    var remindedToday: Boolean
+        get() = preferences.getBoolean(boolpref,false)
+        set(value) = preferences.edit().putBoolean(boolpref,value).apply()
 }

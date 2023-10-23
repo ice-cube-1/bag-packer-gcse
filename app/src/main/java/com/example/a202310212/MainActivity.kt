@@ -43,8 +43,6 @@ import java.util.Calendar
 import java.util.Timer
 import java.util.TimerTask
 
-var currentday = Math.floorMod((Calendar.getInstance().get(Calendar.DAY_OF_WEEK)-2),7)
-
 data class perDayEntry(var day: Int, var item: String, var completed: Boolean, var recurring: Boolean)
 val JSON = jacksonObjectMapper()
 val daysOfWeek = listOf<String>("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday")
@@ -65,10 +63,14 @@ class MainActivity: ComponentActivity()
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        Log.d("initday", currentday.toString())
         super.onCreate(savedInstanceState)
         prefs = Prefs(applicationContext)
         instance = this
+        val currentday = Math.floorMod((Calendar.getInstance().get(Calendar.DAY_OF_WEEK)-2),7)
+        if (prefs!!.currentDay != currentday) {
+            wipeDay(prefs!!, prefs!!.currentDay)
+            prefs!!.currentDay = currentday
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "testName"
             val descriptionText = "testDescription"
@@ -84,19 +86,24 @@ class MainActivity: ComponentActivity()
 
         var builder = NotificationCompat.Builder(this, "testChannel")
             .setSmallIcon(R.drawable.notification_icon)
-            .setContentTitle("Notification title")
-            .setContentText("Notification text")
+            .setContentTitle("Have you remembered everything?")
+            .setContentText("You have not marked everything as packed.")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
-        with(NotificationManagerCompat.from(this)) {
-            // notificationId is a unique int for each notification that you must define.
-            notify(0, builder.build())
-
-        }
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         Timer().scheduleAtFixedRate( object : TimerTask() {
             override fun run() {
-                getLocation(fusedLocationClient)
+                getLocation(fusedLocationClient) { latitude, longitude ->
+                    var homeLat = 1.1
+                    var homeLong = 1.2
+                    if ((homeLat != latitude) && (homeLong!=longitude) && (!prefs!!.remindedToday) && (stillToDo(
+                            prefs!!, prefs!!.currentDay))) {
+                        with(NotificationManagerCompat.from(this@MainActivity)) {
+                            notify(0,builder.build())
+                        }
+                        prefs!!.remindedToday=true
+                    }
+                }
             }
         }, 0, 1000)
         //addData(prefs!!,"item1",2,false)
@@ -122,19 +129,22 @@ class MainActivity: ComponentActivity()
         }
 
 @SuppressLint("MissingPermission")
-fun getLocation(fusedLocationClient: FusedLocationProviderClient) {
-    fusedLocationClient.lastLocation.addOnSuccessListener {
-        Log.d("LOCATION222", listOf(it.latitude, it.longitude).toString())
+fun getLocation(fusedLocationClient: FusedLocationProviderClient, callback: (Double, Double) -> Unit) {
+    fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+        if (location != null) {
+            val lat = location.latitude
+            val long = location.longitude
+            callback(lat, long)
+        } else {
+            callback(0.0, 0.0) // Handle the case when location data is null
+        }
     }
-
-
 }
 
 @Composable
 fun homeScreen(modifier: Modifier = Modifier, prefs: Prefs, navigation: NavController) {
     var goaddtask by remember { mutableStateOf(false) }
     var goviewlist by remember { mutableStateOf(-1) }
-    confirmUncheck(prefs, Math.floorMod(currentday-1,7))
     if (goviewlist != -1) {
         LaunchedEffect(Unit) {
             navigation.navigate("displayTasks/{daytogo}".replace(oldValue = "{daytogo}", newValue = goviewlist.toString()))
@@ -292,7 +302,8 @@ fun displayTasks(prefs: Prefs, modifier: Modifier = Modifier, navigation: NavCon
         })
     } }
 
-fun confirmUncheck(prefs: Prefs, day: Int) {
+fun wipeDay(prefs: Prefs, day: Int) {
+    prefs.remindedToday = false
     var entries = readData(prefs)
     for (i in 0..entries.size-1) {
         if (entries[i].day == day) {
@@ -342,4 +353,14 @@ fun readDataForDay(prefs: Prefs, day: Int): MutableList<perDayEntry> {
         }
     }
     return subsetEntries
+}
+
+fun stillToDo(prefs: Prefs, day: Int): Boolean {
+    var entries = readData(prefs)
+    for (i in entries) {
+        if ((i.day==day) && (!i.completed)) {
+            return true
+        }
+    }
+    return false
 }
