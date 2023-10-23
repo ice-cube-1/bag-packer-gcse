@@ -1,6 +1,5 @@
 package com.example.a202310212
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
@@ -32,6 +31,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 
 data class perDayEntry(var day: Int, var item: String, var completed: Boolean)
 val JSON = jacksonObjectMapper()
+val daysOfWeek = listOf<String>("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday")
 
 class MainActivity: ComponentActivity()
 {
@@ -66,8 +66,8 @@ class MainActivity: ComponentActivity()
 @Composable
 fun homeScreen(modifier: Modifier = Modifier, prefs: Prefs, navigation: NavController) {
     var goaddtask by remember { mutableStateOf(false) }
-    var goviewlist by remember { mutableStateOf(false) }
-    if (goviewlist) {
+    var goviewlist by remember { mutableStateOf(-1) }
+    if (goviewlist != -1) {
         LaunchedEffect(Unit) {
             navigation.navigate("displayTasks")
         }    }
@@ -76,25 +76,24 @@ fun homeScreen(modifier: Modifier = Modifier, prefs: Prefs, navigation: NavContr
             navigation.navigate("addTask")
         }    }
     Column(modifier = Modifier.padding(16.dp)) {
-        homeOptions(
+        addtaskButton(
             AddTask = {
                 goaddtask = true
-            },
-            ViewList = {
-                goviewlist = true
             }
         )
+        for (i in 0..6) {
+            Button(onClick = { goviewlist = i }) {
+                Text(daysOfWeek[i])
+            }
+        }
     }
 }
 
 @Composable
-fun homeOptions(AddTask: () -> Unit, ViewList: () -> Unit) {
+fun addtaskButton(AddTask: () -> Unit) {
     Column {
         Button(onClick = AddTask) {
             Text("Add Task")
-        }
-        Button(onClick = ViewList) {
-            Text("View list for [a day]")
         }
     }
 }
@@ -119,20 +118,38 @@ fun addTaskOptions(
 fun addTask(prefs: Prefs, navigation: NavController,modifier: Modifier = Modifier) {
     var goHome by remember { mutableStateOf(false) }
     var taskValue by remember { mutableStateOf("") }
+    var checkedState by remember { mutableStateOf(mutableListOf<Boolean>(false,false,false,false,false,false,false))}
     if (goHome) {
         if (taskValue != "") {
-            addData(prefs,taskValue,1,false)
+            for (i in 0..6) {
+                if (checkedState[i]) {
+                    addData(prefs,taskValue,i,false)
+                }
+            }
         }
         LaunchedEffect(Unit) {
             navigation.navigate("homeScreen")
         }
     }
-    addTaskOptions(taskValue = taskValue, taskName = {
-        taskValue = it
-    }, submit = {
-        goHome = true
+    Column(modifier = Modifier.padding(16.dp)) {
+        for (i in 0..6) {
+            var individualCheck by remember { mutableStateOf(false) }
+            Row {
+                Checkbox(checked = individualCheck, onCheckedChange = {
+                    individualCheck = it
+                    checkedState[i] = it
+                })
+                Text(text = daysOfWeek[i], modifier = Modifier.padding(16.dp))
+            }
+        }
+
+        addTaskOptions(taskValue = taskValue, taskName = {
+            taskValue = it
+        }, submit = {
+            goHome = true
+        }
+        )
     }
-    )
 }
 
 @Composable
@@ -173,7 +190,6 @@ fun displayTasks(prefs: Prefs, modifier: Modifier = Modifier, navigation: NavCon
     var removable by remember { mutableStateOf(mutableListOf<perDayEntry>()) }
     var tasks = readData(prefs)
     if (goHome) {
-        Log.d("back tests",removable.toString())
         for (i in removable) {
             removeData(prefs, i.day, i.completed,i.item)
         }
@@ -194,9 +210,7 @@ fun displayTasks(prefs: Prefs, modifier: Modifier = Modifier, navigation: NavCon
                     },
                     onClose = {
                     showTask = false
-                    //removeData(prefs,i.day,i.completed,i.item)
                         removable.add(i)
-                        Log.d("more tests",removable.toString())
                 })
             }
         }
@@ -233,4 +247,15 @@ fun addData(prefs: Prefs, item: String, day: Int, completed: Boolean) {
     entries = entries.distinct().toMutableList()
     prefs.mainData = JSON.writeValueAsString(entries)
 
+}
+
+fun readDataForDay(prefs: Prefs, day: Int): MutableList<perDayEntry> {
+    var entries = readData(prefs)
+    var subsetEntries = mutableListOf<perDayEntry>()
+    for (i in entries) {
+        if (i.day == day) {
+            subsetEntries.add(i)
+        }
+    }
+    return subsetEntries
 }
