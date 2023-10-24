@@ -126,6 +126,7 @@ class MainActivity: ComponentActivity()
                     if ((kotlin.math.abs(prefs!!.latitude.toDouble() - latitude) > 0.0025)
                         && (kotlin.math.abs(prefs!!.longitude.toDouble() - longitude) > 0.0025)
                         && (stillToDo(prefs!!, prefs!!.currentDay))
+                        && (prefs!!.longitude.toDouble() != 0.0)
                         && (!prefs!!.remindedToday)) {
                         with(NotificationManagerCompat.from(this@MainActivity)) {
                             notify(0,builder.build())
