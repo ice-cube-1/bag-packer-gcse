@@ -3,6 +3,7 @@ import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -29,6 +30,7 @@ import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -50,9 +52,32 @@ import java.util.Calendar
 import java.util.Timer
 import java.util.TimerTask
 
-data class perDayEntry(var day: Int, var item: String, var completed: Boolean, var recurring: Boolean)
+class Prefs (context: Context) {
+    private val preferences: SharedPreferences = context.getSharedPreferences("1", Context.MODE_PRIVATE)
+    private var allDataPref = "allData"
+    private  var dayPref = "currentDayStuff"
+    private var boolPref = "ReminderStuff"
+    private var latPref = "latPref"
+    private var longPref = "longPref"
+    var mainData: String?
+        get() = preferences.getString(allDataPref, JSON.writeValueAsString(listOf<PerDayEntry>()))
+        set(value) = preferences.edit().putString(allDataPref, value).apply()
+    var currentDay: Int
+        get() = preferences.getInt(dayPref,0)
+        set(value) = preferences.edit().putInt(dayPref,value).apply()
+    var remindedToday: Boolean
+        get() = preferences.getBoolean(boolPref,false)
+        set(value) = preferences.edit().putBoolean(boolPref,value).apply()
+    var latitude: Float
+        get() = preferences.getFloat(latPref, 0.0F)
+        set(value) = preferences.edit().putFloat(latPref,value).apply()
+    var longitude: Float
+        get() = preferences.getFloat(longPref, 0.0F)
+        set(value) = preferences.edit().putFloat(longPref,value).apply()
+}
+data class PerDayEntry(var day: Int, var item: String, var completed: Boolean, var recurring: Boolean)
 val JSON = jacksonObjectMapper()
-val daysOfWeek = listOf<String>("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday")
+val daysOfWeek = listOf("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday")
 
 
 class MainActivity: ComponentActivity()
@@ -71,10 +96,10 @@ class MainActivity: ComponentActivity()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         prefs = Prefs(applicationContext)
         instance = this
-        val currentday = Math.floorMod((Calendar.getInstance().get(Calendar.DAY_OF_WEEK)-2),7)
-        if (prefs!!.currentDay != currentday) {
+        val currentDay = Math.floorMod((Calendar.getInstance().get(Calendar.DAY_OF_WEEK)-2),7)
+        if (prefs!!.currentDay != currentDay) {
             wipeDay(prefs!!, prefs!!.currentDay)
-            prefs!!.currentDay = currentday
+            prefs!!.currentDay = currentDay
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "testName"
@@ -89,7 +114,7 @@ class MainActivity: ComponentActivity()
             notificationManager.createNotificationChannel(channel)
         }
 
-        var builder = NotificationCompat.Builder(this, "testChannel")
+        val builder = NotificationCompat.Builder(this, "testChannel")
             .setSmallIcon(R.drawable.notification_icon)
             .setContentTitle("Have you remembered everything?")
             .setContentText("You have not marked everything as packed.")
@@ -97,7 +122,7 @@ class MainActivity: ComponentActivity()
 
         Timer().scheduleAtFixedRate( object : TimerTask() {
             override fun run() {
-                getLocation() { latitude, longitude ->
+                getLocation { latitude, longitude ->
                     if ((kotlin.math.abs(prefs!!.latitude.toDouble() - latitude) > 0.0025) &&
                         (kotlin.math.abs(prefs!!.longitude.toDouble() - longitude) > 0.0025)
                         && (stillToDo(prefs!!, prefs!!.currentDay))) {
@@ -113,15 +138,15 @@ class MainActivity: ComponentActivity()
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = "homeScreen" ) {
                     composable("homeScreen") {
-                        homeScreen(prefs = prefs!!, navigation = navController)
+                        HomeScreen(prefs = prefs!!, navigation = navController)
                     }
                     composable("displayTasks/{dayToDisplay}") { backStackEntry ->
                         val dayToDisplay = backStackEntry.arguments?.getString("dayToDisplay")
-                        val newday = dayToDisplay!!.toInt()
-                        displayTasks(prefs = prefs!!, navigation = navController, day = newday)
+                        val newDay = dayToDisplay!!.toInt()
+                        DisplayTasks(prefs = prefs!!, navigation = navController, day = newDay)
                     }
                     composable("addTask") {
-                        addTask(prefs = prefs!!, navigation = navController)
+                        AddTask(prefs = prefs!!, navigation = navController)
                     }
                 }
             }
@@ -142,35 +167,35 @@ fun getLocation(callback: (Double, Double) -> Unit) {
 }
 
 @Composable
-fun homeScreen(modifier: Modifier = Modifier, prefs: Prefs, navigation: NavController) {
-    var goaddtask by remember { mutableStateOf(false) }
-    var goviewlist by remember { mutableStateOf(-1) }
-    if (goviewlist != -1) {
+fun HomeScreen(prefs: Prefs, navigation: NavController) {
+    var goAddTask by remember { mutableStateOf(false) }
+    var goViewList by remember { mutableIntStateOf(-1) }
+    if (goViewList != -1) {
         LaunchedEffect(Unit) {
-            navigation.navigate("displayTasks/{daytogo}".replace(oldValue = "{daytogo}", newValue = goviewlist.toString()))
+            navigation.navigate("displayTasks/{dayToGo}".replace(oldValue = "{dayToGo}", newValue = goViewList.toString()))
         }    }
-    if (goaddtask) {
+    if (goAddTask) {
         LaunchedEffect(Unit) {
             navigation.navigate("addTask")
         }    }
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Lists", fontSize = 20.sp)
         for (i in 0..6) {
-            ElevatedButton(onClick = { goviewlist = i }) {
+            ElevatedButton(onClick = { goViewList = i }) {
                 Text(daysOfWeek[i],modifier = Modifier.padding(4.dp))
                 Spacer(modifier = Modifier.weight(1f))
             }
         }
         Spacer(modifier = Modifier.weight(1f))
         Row {
-            addtaskButton(
-                AddTask = {
-                    goaddtask = true
+            AddTaskButton(
+                addTask = {
+                    goAddTask = true
                 }
             )
             Spacer(modifier = Modifier.weight(1f))
             Button(onClick = {
-                getLocation() { latitude, longitude ->
+                getLocation { latitude, longitude ->
                     prefs.latitude = latitude.toFloat()
                     prefs.longitude = longitude.toFloat()
                 }
@@ -184,15 +209,15 @@ fun homeScreen(modifier: Modifier = Modifier, prefs: Prefs, navigation: NavContr
 }
 
 @Composable
-fun addtaskButton(AddTask: () -> Unit) {
-        OutlinedIconButton(onClick = AddTask) {
+fun AddTaskButton(addTask: () -> Unit) {
+        OutlinedIconButton(onClick = addTask) {
             Icon(Icons.Filled.Add, contentDescription = "Add Task",modifier = Modifier.padding(12.dp))
         }
     }
 
 
 @Composable
-fun addTaskOptions(
+fun AddTaskOptions(
     taskValue: String,
     taskName: (String) -> Unit,
 ) {
@@ -203,12 +228,13 @@ fun addTaskOptions(
         )
     }
 }
+@SuppressLint("MutableCollectionMutableState")
 @Composable
-fun addTask(prefs: Prefs, navigation: NavController,modifier: Modifier = Modifier) {
+fun AddTask(prefs: Prefs, navigation: NavController) {
     var goHome by remember { mutableStateOf(false) }
     var taskValue by remember { mutableStateOf("") }
     var recurringValue by remember { mutableStateOf(true) }
-    var checkedState by remember { mutableStateOf(mutableListOf<Boolean>(false,false,false,false,false,false,false))}
+    val checkedState by remember { mutableStateOf(mutableListOf(false,false,false,false,false,false,false))}
     if (goHome) {
         if (taskValue != "") {
             for (i in 0..6) {
@@ -222,8 +248,8 @@ fun addTask(prefs: Prefs, navigation: NavController,modifier: Modifier = Modifie
         }
     }
     Column(modifier = Modifier.padding(16.dp)) {
-        Text("Add Task", fontSize = 20.sp,)
-        addTaskOptions(taskValue = taskValue, taskName = {
+        Text("Add Task", fontSize = 20.sp)
+        AddTaskOptions(taskValue = taskValue, taskName = {
             taskValue = it
         }
         )
@@ -269,14 +295,14 @@ fun TaskItem(
         }
         Spacer(modifier = Modifier.weight(1f))
         IconButton(onClick = onClose) {
-            Icon(Icons.Filled.Close, contentDescription = "Close",)
+            Icon(Icons.Filled.Close, contentDescription = "Close")
         }
 
     }
 }
 
 @Composable
-fun backButton(
+fun BackButton(
     onPress: () -> Unit
 ) {
     Button(onClick = onPress) {
@@ -284,11 +310,12 @@ fun backButton(
     }
 }
 
+@SuppressLint("MutableCollectionMutableState")
 @Composable
-fun displayTasks(prefs: Prefs, modifier: Modifier = Modifier, navigation: NavController, day: Int) {
+fun DisplayTasks(prefs: Prefs, modifier: Modifier = Modifier, navigation: NavController, day: Int) {
     var goHome by remember { mutableStateOf(false) }
-    var removable by remember { mutableStateOf(mutableListOf<perDayEntry>()) }
-    var tasks = readDataForDay(prefs,day)
+    val removable by remember { mutableStateOf(mutableListOf<PerDayEntry>()) }
+    val tasks = readDataForDay(prefs,day)
     if (goHome) {
         for (i in removable) {
             removeData(prefs, i.day, i.completed,i.item, i.recurring)
@@ -316,56 +343,56 @@ fun displayTasks(prefs: Prefs, modifier: Modifier = Modifier, navigation: NavCon
                     recurring = i.recurring)
             }
         }
-        backButton(onPress = {
+        BackButton(onPress = {
             goHome = true
         })
     } }
 
 fun wipeDay(prefs: Prefs, day: Int) {
     prefs.remindedToday = false
-    var entries = readData(prefs)
-    for (i in 0..entries.size-1) {
+    val entries = readData(prefs)
+    for (i in 0..<entries.size) {
         if (entries[i].day == day) {
             entries[i].completed=false
         }
     }
-    var newentries = mutableListOf<perDayEntry>()
+    val newEntries = mutableListOf<PerDayEntry>()
     for (i in entries) {
         if ((i.day != day) or (i.recurring)) {
-            newentries.add(i)
+            newEntries.add(i)
         }
     }
-    prefs.mainData = JSON.writeValueAsString(newentries)
+    prefs.mainData = JSON.writeValueAsString(newEntries)
 }
 
-fun readData(prefs: Prefs): MutableList<perDayEntry> {
+fun readData(prefs: Prefs): MutableList<PerDayEntry> {
     return JSON.readValue(prefs.mainData!!)
 }
 
-fun changeCompletion(prefs: Prefs,toChange: perDayEntry) {
-    var entries = readData(prefs)
+fun changeCompletion(prefs: Prefs,toChange: PerDayEntry) {
+    val entries = readData(prefs)
     entries[entries.indexOf(toChange)].completed = !entries[entries.indexOf(toChange)].completed
     prefs.mainData = JSON.writeValueAsString(entries)
 }
 
 fun removeData(prefs: Prefs, day: Int, completed: Boolean, item: String, recurring: Boolean) {
     val entries = readData(prefs)
-    entries.remove(perDayEntry(day,item,completed,recurring))
+    entries.remove(PerDayEntry(day,item,completed,recurring))
     prefs.mainData = JSON.writeValueAsString(entries)
 }
 
 fun addData(prefs: Prefs, item: String, day: Int, completed: Boolean,recurring: Boolean) {
     var entries = readData(prefs)
-    entries.add(perDayEntry(day,item, completed, recurring))
-    Log.d("added",perDayEntry(day,item,completed,recurring).toString())
+    entries.add(PerDayEntry(day,item, completed, recurring))
+    Log.d("added",PerDayEntry(day,item,completed,recurring).toString())
     entries = entries.distinct().toMutableList()
     prefs.mainData = JSON.writeValueAsString(entries)
 
 }
 
-fun readDataForDay(prefs: Prefs, day: Int): MutableList<perDayEntry> {
-    var entries = readData(prefs)
-    var subsetEntries = mutableListOf<perDayEntry>()
+fun readDataForDay(prefs: Prefs, day: Int): MutableList<PerDayEntry> {
+    val entries = readData(prefs)
+    val subsetEntries = mutableListOf<PerDayEntry>()
     for (i in entries) {
         if (i.day == day) {
             subsetEntries.add(i)
@@ -375,7 +402,7 @@ fun readDataForDay(prefs: Prefs, day: Int): MutableList<perDayEntry> {
 }
 
 fun stillToDo(prefs: Prefs, day: Int): Boolean {
-    var entries = readData(prefs)
+    val entries = readData(prefs)
     for (i in entries) {
         if ((i.day==day) && (!i.completed)) {
             return true
