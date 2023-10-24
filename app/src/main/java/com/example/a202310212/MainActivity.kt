@@ -123,9 +123,10 @@ class MainActivity: ComponentActivity()
         Timer().scheduleAtFixedRate( object : TimerTask() {
             override fun run() {
                 getLocation { latitude, longitude ->
-                    if ((kotlin.math.abs(prefs!!.latitude.toDouble() - latitude) > 0.0025) &&
-                        (kotlin.math.abs(prefs!!.longitude.toDouble() - longitude) > 0.0025)
-                        && (stillToDo(prefs!!, prefs!!.currentDay))) {
+                    if ((kotlin.math.abs(prefs!!.latitude.toDouble() - latitude) > 0.0025)
+                        && (kotlin.math.abs(prefs!!.longitude.toDouble() - longitude) > 0.0025)
+                        && (stillToDo(prefs!!, prefs!!.currentDay))
+                        && (!prefs!!.remindedToday)) {
                         with(NotificationManagerCompat.from(this@MainActivity)) {
                             notify(0,builder.build())
                         }
