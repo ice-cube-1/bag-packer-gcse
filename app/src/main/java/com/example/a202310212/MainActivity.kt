@@ -11,6 +11,7 @@ import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
 import androidx.compose.material.Checkbox
@@ -20,7 +21,11 @@ import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.navigation.NavController
@@ -103,8 +109,6 @@ class MainActivity: ComponentActivity()
                 }
             }
         }, 0, 1000)
-        //addData(prefs!!,"item1",2,false)
-        //addData(prefs!!,"item3",2,false)
         setContent {
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = "homeScreen" ) {
@@ -150,24 +154,30 @@ fun homeScreen(modifier: Modifier = Modifier, prefs: Prefs, navigation: NavContr
             navigation.navigate("addTask")
         }    }
     Column(modifier = Modifier.padding(16.dp)) {
-        Button(onClick = {
-            getLocation() { latitude, longitude ->
-                prefs.latitude = latitude.toFloat()
-                prefs.longitude = longitude.toFloat()
-            }
-            Log.d(prefs.latitude.toString(),prefs.longitude.toString())
-        }
-        ) {
-            Text("Set Home Location")
-        }
-        addtaskButton(
-            AddTask = {
-                goaddtask = true
-            }
-        )
+        Text("Lists", fontSize = 20.sp)
         for (i in 0..6) {
-            Button(onClick = { goviewlist = i }) {
-                Text(daysOfWeek[i])
+            ElevatedButton(onClick = { goviewlist = i }) {
+                Text(daysOfWeek[i],modifier = Modifier.padding(4.dp))
+                Spacer(modifier = Modifier.weight(1f))
+            }
+        }
+        Spacer(modifier = Modifier.weight(1f))
+        Row {
+            addtaskButton(
+                AddTask = {
+                    goaddtask = true
+                }
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Button(onClick = {
+                getLocation() { latitude, longitude ->
+                    prefs.latitude = latitude.toFloat()
+                    prefs.longitude = longitude.toFloat()
+                }
+                Log.d(prefs.latitude.toString(), prefs.longitude.toString())
+            }
+            ) {
+                Text("Set Home Location")
             }
         }
     }
@@ -175,27 +185,22 @@ fun homeScreen(modifier: Modifier = Modifier, prefs: Prefs, navigation: NavContr
 
 @Composable
 fun addtaskButton(AddTask: () -> Unit) {
-    Column {
-        Button(onClick = AddTask) {
-            Text("Add Task")
+        OutlinedIconButton(onClick = AddTask) {
+            Icon(Icons.Filled.Add, contentDescription = "Add Task",modifier = Modifier.padding(12.dp))
         }
     }
-}
+
 
 @Composable
 fun addTaskOptions(
     taskValue: String,
     taskName: (String) -> Unit,
-    submit: () -> Unit
 ) {
     Column (modifier = Modifier.padding(16.dp)) {
         TextField(
             value = taskValue,
             onValueChange = taskName
         )
-        Button(onClick = submit) {
-            Text("Submit")
-        }
     }
 }
 @Composable
@@ -217,6 +222,11 @@ fun addTask(prefs: Prefs, navigation: NavController,modifier: Modifier = Modifie
         }
     }
     Column(modifier = Modifier.padding(16.dp)) {
+        Text("Add Task", fontSize = 20.sp,)
+        addTaskOptions(taskValue = taskValue, taskName = {
+            taskValue = it
+        }
+        )
         for (i in 0..6) {
             var individualCheck by remember { mutableStateOf(false) }
             Row {
@@ -228,15 +238,12 @@ fun addTask(prefs: Prefs, navigation: NavController,modifier: Modifier = Modifie
             }
         }
         Row {
+            Text("Recurring:", modifier = Modifier.padding(16.dp))
             Switch(checked = recurringValue, onCheckedChange = {recurringValue = it})
         }
-
-        addTaskOptions(taskValue = taskValue, taskName = {
-            taskValue = it
-        }, submit = {
-            goHome = true
+        Button(onClick = {goHome = true}) {
+            Text("Submit")
         }
-        )
     }
 }
 
@@ -246,6 +253,7 @@ fun TaskItem(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     onClose: () -> Unit,
+    recurring: Boolean
 ) {
     Row {
         Checkbox(
@@ -256,8 +264,12 @@ fun TaskItem(
             text = taskName,
             modifier = Modifier.padding(16.dp)
         )
+        if (recurring) {
+            Icon(Icons.Filled.Refresh, contentDescription = "Recurring",modifier = Modifier.padding(12.dp))
+        }
+        Spacer(modifier = Modifier.weight(1f))
         IconButton(onClick = onClose) {
-            Icon(Icons.Filled.Close, contentDescription = "Close")
+            Icon(Icons.Filled.Close, contentDescription = "Close",)
         }
 
     }
@@ -286,7 +298,7 @@ fun displayTasks(prefs: Prefs, modifier: Modifier = Modifier, navigation: NavCon
         }
     }
     Column(modifier = modifier.padding(16.dp)) {
-        Text(text= daysOfWeek[day])
+        Text(text= daysOfWeek[day], fontSize = 20.sp)
         for (i in tasks) {
             var showTask by remember { mutableStateOf(true) }
             var checked by remember { mutableStateOf(i.completed)}
@@ -300,7 +312,8 @@ fun displayTasks(prefs: Prefs, modifier: Modifier = Modifier, navigation: NavCon
                     onClose = {
                         showTask = false
                         removable.add(i)
-                })
+                },
+                    recurring = i.recurring)
             }
         }
         backButton(onPress = {
