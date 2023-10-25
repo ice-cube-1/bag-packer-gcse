@@ -19,7 +19,6 @@ The first time in a day the user leaves the area near the location they set as h
 ___
 
 Current issues / features to be implemented (in order of priority)
- - #08: Fix location to use getCurrentLocation rather than getLastLocation so that it actually updates at a reasonable frequency
  - #07: Add ontap function for location to either open the app or view the precise day (depending how hard it is)
  - #06: Change daily refresh so it works if the app isn't opened every day (details of how to fix in the issue)
  - #09: Some kind of acknowlegement the home location is set (not sure what yet)
