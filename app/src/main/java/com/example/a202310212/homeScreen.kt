@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
+import androidx.compose.material.Snackbar
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -18,11 +19,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 // screen that displays days of the week that when clicked display the list for that day
 // also has a + button to go to a page to add tasks
@@ -33,6 +37,9 @@ fun HomeScreen(prefs: Prefs, navigation: NavController) {
     // remember variables to refresh page
     var goAddTask by remember { mutableStateOf(false) }
     var goViewList by remember { mutableIntStateOf(-1) }
+    var snackbarVisible by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+    var snackbarMessage by remember { mutableStateOf("") }
     // navigates to list page passing the correct argument
     if (goViewList != -1) {
         LaunchedEffect(Unit) {
@@ -70,12 +77,34 @@ fun HomeScreen(prefs: Prefs, navigation: NavController) {
             }
             Spacer(modifier = Modifier.weight(1f))
             Button(onClick = {
+                snackbarMessage = if((kotlin.math.abs(prefs.latitude.toDouble() - prefs.latitudeCurrent) < 0.0005)
+                    && (kotlin.math.abs(prefs.longitude.toDouble() - prefs.longitudeCurrent) < 0.0005)) {
+                    "You are already at your home location"
+                } else if (prefs.latitudeCurrent.toDouble() == 0.0) {
+                    "Double check that your location is working"
+                } else {
+                    "Home location set"
+                }
                 prefs.latitude = prefs.latitudeCurrent
                 prefs.longitude = prefs.longitudeCurrent
+                snackbarVisible = true
+                coroutineScope.launch {
+                    delay(3000)
+                    snackbarVisible = false
+                }
                 Log.d(prefs.latitude.toString(), prefs.longitude.toString())
+
             }) {
                 Text("Set Home Location")
             }
         }
+    }
+    if (snackbarVisible) {
+        Snackbar(
+            modifier = Modifier.padding(16.dp),
+            content = {
+                Text(snackbarMessage)
+            }
+        )
     }
 }
