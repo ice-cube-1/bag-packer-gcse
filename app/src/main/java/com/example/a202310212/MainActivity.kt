@@ -87,7 +87,6 @@ class MainActivity : ComponentActivity() {
         }
         // Builds a specific notification (the only notification)
         val intent = Intent(this, MainActivity::class.java)
-        intent.putExtra("dayToDisplay", prefs!!.currentDay)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         val pendingIntent =
             PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
@@ -95,7 +94,7 @@ class MainActivity : ComponentActivity() {
             .setSmallIcon(R.drawable.notification_icon)
             .setContentTitle("Have you remembered everything?")
             .setContentText("You have not marked everything as packed.")
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT).setContentIntent(pendingIntent)
+            .setPriority(NotificationCompat.PRIORITY_MAX).setContentIntent(pendingIntent)
 
         // requests location every second
         locationCallback = object : LocationCallback() {
@@ -107,13 +106,14 @@ class MainActivity : ComponentActivity() {
                     prefs!!.latitudeCurrent = location.latitude.toFloat()
                     // very long if statement that checks if you've left for the first time and haven't
                     // completed everything
-                    if (((kotlin.math.abs(prefs!!.latitude.toDouble() - location.latitude) > 0.0025) || (kotlin.math.abs(
+                    if (((kotlin.math.abs(prefs!!.latitude.toDouble() - location.latitude) > 0.0005) || (kotlin.math.abs(
                             prefs!!.longitude.toDouble() - location.longitude
-                        ) > 0.0025)) && (itemsUnchecked(
+                        ) > 0.0005)) && (itemsUnchecked(
                             prefs!!, prefs!!.currentDay
                         )) && (prefs!!.longitude.toDouble() != 0.0) && (location.longitude != 0.0) && (!prefs!!.remindedToday)
                     ) {
                         // Actually sends the notification
+                        Log.d("notifying", location.latitude.toString())
                         val notificationManager =
                             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                         notificationManager.notify(0, builder.build())
@@ -122,7 +122,8 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancel(0)
 
         // allows navigation between screens, with start destination of the home screen
         setContent {
