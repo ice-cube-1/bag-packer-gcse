@@ -6,6 +6,8 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
+import android.os.Looper
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -15,12 +17,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.a202310212.MainActivity.Companion.fusedLocationClient
+import com.example.a202310212.MainActivity.Companion.locationCallback
+import com.example.a202310212.MainActivity.Companion.locationRequest
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import java.util.Calendar
-import java.util.Timer
-import java.util.TimerTask
 
 // class for each item that will be added to the list of items, which is then serialized into preferences
 data class ItemToPack(
@@ -35,6 +40,7 @@ val daysOfWeek =
     listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 
 
+@Suppress("DEPRECATION", "UNUSED_EXPRESSION")
 class MainActivity : ComponentActivity() {
     // initializes global variables for the location and preferences
     companion object {
@@ -42,6 +48,9 @@ class MainActivity : ComponentActivity() {
         var prefs: Prefs? = null
         lateinit var instance: MainActivity
             private set
+        val locationRequest = LocationRequest.Builder(LocationRequest.PRIORITY_HIGH_ACCURACY,5000)
+            .build()
+        lateinit var locationCallback: LocationCallback
     }
 
     // these shouldn't technically need to be here as they're suppressing warnings, but the code appears
@@ -51,7 +60,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         prefs = Prefs(applicationContext)
         instance = this
         val currentDay = Math.floorMod((Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 2), 7)
@@ -83,27 +91,33 @@ class MainActivity : ComponentActivity() {
             .setContentText("You have not marked everything as packed.")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
+
         // requests location every second
-        Timer().scheduleAtFixedRate(object : TimerTask() {
-            override fun run() {
-                getLocation { latitude, longitude ->
-                    // very long if statement that checks if you've left for the first time and haven't
-                    // completed everything
-                    if (((kotlin.math.abs(prefs!!.latitude.toDouble() - latitude) > 0.0025) || (kotlin.math.abs(
-                            prefs!!.longitude.toDouble() - longitude
-                        ) > 0.0025)) && (itemsUnchecked(
-                            prefs!!, prefs!!.currentDay
-                        )) && (prefs!!.longitude.toDouble() != 0.0) && (longitude != 0.0) && (!prefs!!.remindedToday)
-                    ) {
-                        // Actually sends the notification
-                        with(NotificationManagerCompat.from(this@MainActivity)) {
-                            notify(0, builder.build())
+
+                locationCallback = object : LocationCallback() {
+                    override fun onLocationResult(p0: LocationResult) {
+                        p0
+                        for (location in p0.locations){
+                            Log.d("location",location.latitude.toString())
+                            // very long if statement that checks if you've left for the first time and haven't
+                            // completed everything
+                            if (((kotlin.math.abs(prefs!!.latitude.toDouble() - location.latitude) > 0.0025) || (kotlin.math.abs(
+                                    prefs!!.longitude.toDouble() - location.longitude
+                                ) > 0.0025)) && (itemsUnchecked(
+                                    prefs!!, prefs!!.currentDay
+                                )) && (prefs!!.longitude.toDouble() != 0.0) && (location.longitude != 0.0) && (!prefs!!.remindedToday)
+                            ) {
+                                // Actually sends the notification
+                                with(NotificationManagerCompat.from(this@MainActivity)) {
+                                    notify(0, builder.build())
+                                }
+                                prefs!!.remindedToday = true
+                            }
                         }
-                        prefs!!.remindedToday = true
                     }
                 }
-            }
-        }, 0, 1000)
+
+
         // allows navigation between screens, with start destination of the home screen
         setContent {
             val navController = rememberNavController()
@@ -121,20 +135,14 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        startLocationUpdates()
     }
 }
 
 @SuppressLint("MissingPermission")
-// Gets location, but only gets the last one another application asks for
-// I doubt this would actually work generally so will need to change this function
-fun getLocation(callback: (Double, Double) -> Unit) {
-    fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-        if (location != null) {
-            val lat = location.latitude
-            val long = location.longitude
-            callback(lat, long)
-        } else {
-            callback(0.0, 0.0)
-        }
-    }
+private fun startLocationUpdates() {
+    fusedLocationClient.requestLocationUpdates(locationRequest,
+        locationCallback,
+        Looper.getMainLooper())
 }
