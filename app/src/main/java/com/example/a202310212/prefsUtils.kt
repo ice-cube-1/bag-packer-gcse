@@ -15,6 +15,8 @@ class Prefs(context: Context) {
     private var boolPref = "ReminderStuff"
     private var latPref = "latPref"
     private var longPref = "longPref"
+    private var latPrefCurrent = "latPrefCurrent"
+    private var longPrefCurrent = "longPrefCurrent"
     var tasksList: String?
         get() = preferences.getString(allDataPref, JSON.writeValueAsString(listOf<ItemToPack>()))
         set(value) = preferences.edit().putString(allDataPref, value).apply()
@@ -30,6 +32,12 @@ class Prefs(context: Context) {
     var longitude: Float
         get() = preferences.getFloat(longPref, 0.0F)
         set(value) = preferences.edit().putFloat(longPref, value).apply()
+    var latitudeCurrent: Float
+        get() = preferences.getFloat(latPrefCurrent, 0.0F)
+        set(value) = preferences.edit().putFloat(latPrefCurrent, value).apply()
+    var longitudeCurrent: Float
+        get() = preferences.getFloat(longPrefCurrent, 0.0F)
+        set(value) = preferences.edit().putFloat(longPrefCurrent, value).apply()
 }
 
 // these functions should be self-explanatory

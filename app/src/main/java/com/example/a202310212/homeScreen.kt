@@ -70,10 +70,8 @@ fun HomeScreen(prefs: Prefs, navigation: NavController) {
             }
             Spacer(modifier = Modifier.weight(1f))
             Button(onClick = {
-                getLocation { latitude, longitude ->
-                    prefs.latitude = latitude.toFloat()
-                    prefs.longitude = longitude.toFloat()
-                }
+                prefs.latitude = prefs.latitudeCurrent
+                prefs.longitude = prefs.longitudeCurrent
                 Log.d(prefs.latitude.toString(), prefs.longitude.toString())
             }) {
                 Text("Set Home Location")

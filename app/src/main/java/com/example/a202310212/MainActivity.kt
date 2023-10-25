@@ -3,7 +3,9 @@ package com.example.a202310212
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.os.Looper
@@ -12,7 +14,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -48,8 +49,8 @@ class MainActivity : ComponentActivity() {
         var prefs: Prefs? = null
         lateinit var instance: MainActivity
             private set
-        val locationRequest = LocationRequest.Builder(LocationRequest.PRIORITY_HIGH_ACCURACY,5000)
-            .build()
+        val locationRequest =
+            LocationRequest.Builder(LocationRequest.PRIORITY_HIGH_ACCURACY, 5000).build()
         lateinit var locationCallback: LocationCallback
     }
 
@@ -85,37 +86,42 @@ class MainActivity : ComponentActivity() {
             notificationManager.createNotificationChannel(channel)
         }
         // Builds a specific notification (the only notification)
+        val intent = Intent(this, MainActivity::class.java)
+        intent.putExtra("dayToDisplay", prefs!!.currentDay)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        val pendingIntent =
+            PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         val builder = NotificationCompat.Builder(this, "testChannel")
             .setSmallIcon(R.drawable.notification_icon)
             .setContentTitle("Have you remembered everything?")
             .setContentText("You have not marked everything as packed.")
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT).setContentIntent(pendingIntent)
 
         // requests location every second
-
-                locationCallback = object : LocationCallback() {
-                    override fun onLocationResult(p0: LocationResult) {
-                        p0
-                        for (location in p0.locations){
-                            Log.d("location",location.latitude.toString())
-                            // very long if statement that checks if you've left for the first time and haven't
-                            // completed everything
-                            if (((kotlin.math.abs(prefs!!.latitude.toDouble() - location.latitude) > 0.0025) || (kotlin.math.abs(
-                                    prefs!!.longitude.toDouble() - location.longitude
-                                ) > 0.0025)) && (itemsUnchecked(
-                                    prefs!!, prefs!!.currentDay
-                                )) && (prefs!!.longitude.toDouble() != 0.0) && (location.longitude != 0.0) && (!prefs!!.remindedToday)
-                            ) {
-                                // Actually sends the notification
-                                with(NotificationManagerCompat.from(this@MainActivity)) {
-                                    notify(0, builder.build())
-                                }
-                                prefs!!.remindedToday = true
-                            }
-                        }
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(p0: LocationResult) {
+                p0
+                for (location in p0.locations) {
+                    Log.d("location", location.latitude.toString())
+                    prefs!!.longitudeCurrent = location.longitude.toFloat()
+                    prefs!!.latitudeCurrent = location.latitude.toFloat()
+                    // very long if statement that checks if you've left for the first time and haven't
+                    // completed everything
+                    if (((kotlin.math.abs(prefs!!.latitude.toDouble() - location.latitude) > 0.0025) || (kotlin.math.abs(
+                            prefs!!.longitude.toDouble() - location.longitude
+                        ) > 0.0025)) && (itemsUnchecked(
+                            prefs!!, prefs!!.currentDay
+                        )) && (prefs!!.longitude.toDouble() != 0.0) && (location.longitude != 0.0) && (!prefs!!.remindedToday)
+                    ) {
+                        // Actually sends the notification
+                        val notificationManager =
+                            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                        notificationManager.notify(0, builder.build())
+                        prefs!!.remindedToday = true
                     }
                 }
+            }
+        }
 
 
         // allows navigation between screens, with start destination of the home screen
@@ -142,7 +148,7 @@ class MainActivity : ComponentActivity() {
 
 @SuppressLint("MissingPermission")
 private fun startLocationUpdates() {
-    fusedLocationClient.requestLocationUpdates(locationRequest,
-        locationCallback,
-        Looper.getMainLooper())
+    fusedLocationClient.requestLocationUpdates(
+        locationRequest, locationCallback, Looper.getMainLooper()
+    )
 }
