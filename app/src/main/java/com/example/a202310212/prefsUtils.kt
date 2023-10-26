@@ -2,7 +2,6 @@ package com.example.a202310212
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import com.fasterxml.jackson.module.kotlin.readValue
 
 // Class that can easily be uploaded to sharedPreferences
@@ -67,7 +66,6 @@ fun removeData(prefs: Prefs, day: Int, completed: Boolean, item: String, recurri
 fun addData(prefs: Prefs, item: String, day: Int, completed: Boolean, recurring: Boolean) {
     var entries = readData(prefs)
     entries.add(ItemToPack(day, item, completed, recurring))
-    Log.d("added", ItemToPack(day, item, completed, recurring).toString())
     entries = entries.distinct().toMutableList()
     prefs.tasksList = JSON.writeValueAsString(entries)
 

@@ -1,6 +1,5 @@
 package com.example.a202310212
 
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -77,6 +76,7 @@ fun HomeScreen(prefs: Prefs, navigation: NavController) {
             }
             Spacer(modifier = Modifier.weight(1f))
             Button(onClick = {
+                // sets the snackbar message
                 snackbarMessage = if (prefs.latitudeCurrent.toDouble() == 0.0) {
                     "Allow location permissions in settings"
                 } else if ((kotlin.math.abs(prefs.latitude.toDouble() - prefs.latitudeCurrent) < 0.0005) && (kotlin.math.abs(
@@ -89,18 +89,18 @@ fun HomeScreen(prefs: Prefs, navigation: NavController) {
                 }
                 prefs.latitude = prefs.latitudeCurrent
                 prefs.longitude = prefs.longitudeCurrent
+                // makes the snackbar visible for 1 sec
                 snackbarVisible = true
                 coroutineScope.launch {
                     delay(3000)
                     snackbarVisible = false
                 }
-                Log.d(prefs.latitude.toString(), prefs.longitude.toString())
-
             }) {
                 Text("Set Home Location")
             }
         }
     }
+    // actually shows the snackbar
     if (snackbarVisible) {
         Snackbar(modifier = Modifier.padding(16.dp), content = {
             Text(snackbarMessage)

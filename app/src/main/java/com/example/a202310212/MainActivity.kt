@@ -63,17 +63,28 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         prefs = Prefs(applicationContext)
         instance = this
+        // wipes days if required
         val currentDay = Math.floorMod((Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 2), 7)
-        if (prefs!!.currentDay != currentDay) {
-            wipeDay(prefs!!, prefs!!.currentDay)
-            prefs!!.currentDay = currentDay
+        if (prefs!!.currentDay < currentDay) {
+            for (i in prefs!!.currentDay..<currentDay) {
+                wipeDay(prefs!!, i)
+            }
+        } else if (prefs!!.currentDay > currentDay) {
+            for (i in prefs!!.currentDay..6) {
+                wipeDay(prefs!!, i)
+            }
+            for (i in 0..<currentDay) {
+                wipeDay(prefs!!, i)
+            }
         }
+        wipeDay(prefs!!, prefs!!.currentDay)
+        prefs!!.currentDay = currentDay
 
         // Code that creates and sends notifications based on location. It's a lot of copy paste
         // from different sources, but it seems to work. However it's also the part of code with the
         // most issues that I want to change most as it doesn't have complete functionality.
 
-        // creates a notification channel (it's fine to call it repeatedly, it just doesn't do anything
+        // creates a notification channel (it's fine to call it repeatedly, it just doesn't do anything)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "testName"
             val descriptionText = "testDescription"
@@ -95,8 +106,8 @@ class MainActivity : ComponentActivity() {
             .setContentTitle("Have you remembered everything?")
             .setContentText("You have not marked everything as packed.")
             .setPriority(NotificationCompat.PRIORITY_MAX).setContentIntent(pendingIntent)
-
-        // requests location every second
+        // requests location repeatedly and stores it
+        // also sends a notification on specific conditions
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(p0: LocationResult) {
                 p0
@@ -147,6 +158,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+// starts location updates on app opening
 @SuppressLint("MissingPermission")
 private fun startLocationUpdates() {
     fusedLocationClient.requestLocationUpdates(
