@@ -77,11 +77,13 @@ fun HomeScreen(prefs: Prefs, navigation: NavController) {
             }
             Spacer(modifier = Modifier.weight(1f))
             Button(onClick = {
-                snackbarMessage = if((kotlin.math.abs(prefs.latitude.toDouble() - prefs.latitudeCurrent) < 0.0005)
-                    && (kotlin.math.abs(prefs.longitude.toDouble() - prefs.longitudeCurrent) < 0.0005)) {
+                snackbarMessage = if (prefs.latitudeCurrent.toDouble() == 0.0) {
+                    "Allow location permissions in settings"
+                } else if ((kotlin.math.abs(prefs.latitude.toDouble() - prefs.latitudeCurrent) < 0.0005) && (kotlin.math.abs(
+                        prefs.longitude.toDouble() - prefs.longitudeCurrent
+                    ) < 0.0005)
+                ) {
                     "You are already at your home location"
-                } else if (prefs.latitudeCurrent.toDouble() == 0.0) {
-                    "Double check that your location is working"
                 } else {
                     "Home location set"
                 }
@@ -100,11 +102,8 @@ fun HomeScreen(prefs: Prefs, navigation: NavController) {
         }
     }
     if (snackbarVisible) {
-        Snackbar(
-            modifier = Modifier.padding(16.dp),
-            content = {
-                Text(snackbarMessage)
-            }
-        )
+        Snackbar(modifier = Modifier.padding(16.dp), content = {
+            Text(snackbarMessage)
+        })
     }
 }
