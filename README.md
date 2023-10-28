@@ -3,8 +3,6 @@ App that allows the user to add items that they need to bring either weekly or a
 
 If they haven't marked everything for the day as completed and leave the house a notification reminds them to check if they have remembered everything.
 
-NOTE: For this app to work you will need to manually enable location permissions "while using the app" after install. I am not planning to implement the feature where it requests permissions.
-
 ___
 
 On the home screen the user has the option to view the lists for each day, add a task or set their home location
@@ -19,9 +17,7 @@ The first time in a day the user leaves the area near the location they set as h
 ___
 
 Current issues / features to be implemented (in order of priority)
- - #07: Add ontap function for location to either open the app or view the precise day (depending how hard it is)
- - #06: Change daily refresh so it works if the app isn't opened every day (details of how to fix in the issue)
- - #09: Some kind of acknowlegement the home location is set (not sure what yet)
- - #12: Adding colour schemes / icon / correct app name - important but given I don't yet know even the name it's not high priority
- - #10: Location permissions - as mentioned above it would be useful but there's a workaround and its quite a lot of work
+ - #12: Adding colour schemes / icon / correct app name
+ - #13: Notification goes to tasks list page
+ - #14: Location works in background
  - #03: Tasks reappearing on screen rotate - such an edge case it should be fine
