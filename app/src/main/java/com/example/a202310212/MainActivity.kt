@@ -122,7 +122,7 @@ class MainActivity : ComponentActivity() {
                         ) > 0.0005)) && (itemsUnchecked(
                             prefs!!, prefs!!.currentDay
                         )) && (prefs!!.longitude.toDouble() != 0.0) && (location.longitude != 0.0) && (!prefs!!.remindedToday)
-                    ) {
+                        && prefs!!.remindedToday == false) {
                         // Actually sends the notification
                         Log.d("notifying", location.latitude.toString())
                         val notificationManager =
