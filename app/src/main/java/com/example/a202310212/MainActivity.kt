@@ -121,14 +121,14 @@ class MainActivity : ComponentActivity() {
                             prefs!!.longitude.toDouble() - location.longitude
                         ) > 0.0005)) && (itemsUnchecked(
                             prefs!!, prefs!!.currentDay
-                        )) && (prefs!!.longitude.toDouble() != 0.0) && (location.longitude != 0.0) && (!prefs!!.remindedToday)
-                        && prefs!!.remindedToday == false) {
+                        )) && (prefs!!.longitude.toDouble() != 0.0) && (location.longitude != 0.0) && !prefs!!.remindedToday
+                    ) {
                         // Actually sends the notification
+                        prefs!!.remindedToday = true
                         Log.d("notifying", location.latitude.toString())
                         val notificationManager =
                             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                         notificationManager.notify(0, builder.build())
-                        prefs!!.remindedToday = true
                     }
                 }
             }
