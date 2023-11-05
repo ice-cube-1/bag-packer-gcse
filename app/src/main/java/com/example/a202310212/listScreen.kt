@@ -6,13 +6,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Checkbox
+import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -36,21 +39,32 @@ fun TaskItem(
 ) {
     Row {
         Checkbox(
-            checked = checked, onCheckedChange = onCheckedChange
+            checked = checked, onCheckedChange = onCheckedChange,
+            colors = CheckboxDefaults.colors(
+                checkedColor = MaterialTheme.colorScheme.primary,
+                uncheckedColor = MaterialTheme.colorScheme.outline
+            ),
         )
         Text(
-            text = taskName, modifier = Modifier.padding(16.dp)
+            text = taskName,
+            modifier = Modifier.padding(16.dp),
+            color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier.weight(1f))
         if (recurring) {
             Icon(
                 Icons.Filled.Refresh,
                 contentDescription = "Recurring",
-                modifier = Modifier.padding(12.dp)
+                modifier = Modifier.padding(12.dp),
+                tint = MaterialTheme.colorScheme.onBackground
             )
         }
         IconButton(onClick = onClose) {
-            Icon(Icons.Filled.Close, contentDescription = "Close")
+            Icon(
+                Icons.Filled.Close,
+                contentDescription = "Close",
+                tint = MaterialTheme.colorScheme.onBackground
+            )
         }
 
     }
@@ -77,7 +91,9 @@ fun DisplayTasks(prefs: Prefs, modifier: Modifier = Modifier, navigation: NavCon
         }
     }
     Column(modifier = modifier.padding(16.dp)) {
-        Text(text = daysOfWeek[day], fontSize = 20.sp)
+        Text(
+            text = daysOfWeek[day], fontSize = 20.sp, color = MaterialTheme.colorScheme.onBackground
+        )
         for (i in tasks) {
             // more UI refresher vars, this time to show if an individual task is shown / checked.
             // this is just related to the UI, and does not change underlying data at all
@@ -99,8 +115,11 @@ fun DisplayTasks(prefs: Prefs, modifier: Modifier = Modifier, navigation: NavCon
             }
         }
         // once clicked will remove tasks and go to home screen
-        Button(onClick = { goHome = true }) {
-            Text("Go Back")
+        Button(
+            onClick = { goHome = true },
+            colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.primaryContainer)
+        ) {
+            Text("Go Back", color = MaterialTheme.colorScheme.onPrimaryContainer)
         }
     }
 }

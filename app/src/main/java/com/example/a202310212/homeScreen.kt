@@ -99,7 +99,8 @@ fun HomeScreen(prefs: Prefs, navigation: NavController) {
                     delay(3000)
                     snackbarVisible = false
                 }
-            }, colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.primaryContainer)) {
+            },
+                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.primaryContainer)) {
                 Text("Set Home Location", color = MaterialTheme.colorScheme.onPrimaryContainer)
             }
         }
