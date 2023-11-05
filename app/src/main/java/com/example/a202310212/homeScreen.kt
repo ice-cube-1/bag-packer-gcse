@@ -1,17 +1,20 @@
 package com.example.a202310212
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Snackbar
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ElevatedButton
-import androidx.compose.material3.OutlinedIconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,22 +59,23 @@ fun HomeScreen(prefs: Prefs, navigation: NavController) {
         }
     }
     Column(modifier = Modifier.padding(16.dp)) {
-        Text("Lists", fontSize = 20.sp)
+        Text("Lists", fontSize = 20.sp, color = MaterialTheme.colorScheme.onBackground)
         // displays a button for each day that will update "goViewList" with the day to view on press
         for (i in 0..6) {
             ElevatedButton(onClick = { goViewList = i }) {
-                Text(daysOfWeek[i], modifier = Modifier.padding(4.dp))
+                Text(daysOfWeek[i], modifier = Modifier.padding(4.dp), color = MaterialTheme.colorScheme.onSecondaryContainer)
                 Spacer(modifier = Modifier.weight(1f))
             }
         }
         Spacer(modifier = Modifier.weight(1f))
         // row with the add task button and a button that sets the home location in sharedPreferences
         Row {
-            OutlinedIconButton(onClick = { goAddTask = true }) {
+            IconButton(onClick = { goAddTask = true } ,modifier = Modifier.background(color = MaterialTheme.colorScheme.primaryContainer)) {
                 Icon(
                     Icons.Filled.Add,
                     contentDescription = "Add Task",
-                    modifier = Modifier.padding(12.dp)
+                    modifier = Modifier.padding(12.dp),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
@@ -95,15 +99,15 @@ fun HomeScreen(prefs: Prefs, navigation: NavController) {
                     delay(3000)
                     snackbarVisible = false
                 }
-            }) {
-                Text("Set Home Location")
+            }, colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.primaryContainer)) {
+                Text("Set Home Location", color = MaterialTheme.colorScheme.onPrimaryContainer)
             }
         }
     }
     // actually shows the snackbar
     if (snackbarVisible) {
-        Snackbar(modifier = Modifier.padding(16.dp), content = {
-            Text(snackbarMessage)
+        Snackbar(modifier = Modifier.padding(16.dp), backgroundColor = MaterialTheme.colorScheme.onSurface, content = {
+            Text(snackbarMessage, color = MaterialTheme.colorScheme.surfaceVariant)
         })
     }
 }

@@ -13,6 +13,9 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
 import androidx.core.app.NotificationCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -20,6 +23,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.a202310212.MainActivity.Companion.fusedLocationClient
 import com.example.a202310212.MainActivity.Companion.locationCallback
 import com.example.a202310212.MainActivity.Companion.locationRequest
+import com.example.a202310212.ui.theme.WoofTheme
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -138,18 +142,22 @@ class MainActivity : ComponentActivity() {
 
         // allows navigation between screens, with start destination of the home screen
         setContent {
-            val navController = rememberNavController()
-            NavHost(navController = navController, startDestination = "homeScreen") {
-                composable("homeScreen") {
-                    HomeScreen(prefs = prefs!!, navigation = navController)
-                }
-                composable("displayTasks/{dayToDisplay}") { backStackEntry ->
-                    val dayToDisplay = backStackEntry.arguments?.getString("dayToDisplay")
-                    val newDay = dayToDisplay!!.toInt()
-                    DisplayTasks(prefs = prefs!!, navigation = navController, day = newDay)
-                }
-                composable("addTask") {
-                    AddTask(prefs = prefs!!, navigation = navController)
+            WoofTheme {
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    val navController = rememberNavController()
+                    NavHost(navController = navController, startDestination = "homeScreen") {
+                        composable("homeScreen") {
+                            HomeScreen(prefs = prefs!!, navigation = navController)
+                        }
+                        composable("displayTasks/{dayToDisplay}") { backStackEntry ->
+                            val dayToDisplay = backStackEntry.arguments?.getString("dayToDisplay")
+                            val newDay = dayToDisplay!!.toInt()
+                            DisplayTasks(prefs = prefs!!, navigation = navController, day = newDay)
+                        }
+                        composable("addTask") {
+                            AddTask(prefs = prefs!!, navigation = navController)
+                        }
+                    }
                 }
             }
         }
