@@ -18,6 +18,7 @@ package com.example.a202310212.ui.theme
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -95,21 +96,87 @@ private val DarkColors = darkColorScheme(
     scrim = md_theme_dark_scrim,
 )
 
+val LightColors2 = lightColorScheme(
+    primary = md2_theme_light_primary,
+    onPrimary = md2_theme_light_onPrimary,
+    primaryContainer = md2_theme_light_primaryContainer,
+    onPrimaryContainer = md2_theme_light_onPrimaryContainer,
+    secondary = md2_theme_light_secondary,
+    onSecondary = md2_theme_light_onSecondary,
+    secondaryContainer = md2_theme_light_secondaryContainer,
+    onSecondaryContainer = md2_theme_light_onSecondaryContainer,
+    tertiary = md2_theme_light_tertiary,
+    onTertiary = md2_theme_light_onTertiary,
+    tertiaryContainer = md2_theme_light_tertiaryContainer,
+    onTertiaryContainer = md2_theme_light_onTertiaryContainer,
+    error = md2_theme_light_error,
+    errorContainer = md2_theme_light_errorContainer,
+    onError = md2_theme_light_onError,
+    onErrorContainer = md2_theme_light_onErrorContainer,
+    background = md2_theme_light_background,
+    onBackground = md2_theme_light_onBackground,
+    surface = md2_theme_light_surface,
+    onSurface = md2_theme_light_onSurface,
+    surfaceVariant = md2_theme_light_surfaceVariant,
+    onSurfaceVariant = md2_theme_light_onSurfaceVariant,
+    outline = md2_theme_light_outline,
+    inverseOnSurface = md2_theme_light_inverseOnSurface,
+    inverseSurface = md2_theme_light_inverseSurface,
+    inversePrimary = md2_theme_light_inversePrimary,
+    surfaceTint = md2_theme_light_surfaceTint,
+    outlineVariant = md2_theme_light_outlineVariant,
+    scrim = md2_theme_light_scrim,
+)
+
+
+val DarkColors2 = darkColorScheme(
+    primary = md2_theme_dark_primary,
+    onPrimary = md2_theme_dark_onPrimary,
+    primaryContainer = md2_theme_dark_primaryContainer,
+    onPrimaryContainer = md2_theme_dark_onPrimaryContainer,
+    secondary = md2_theme_dark_secondary,
+    onSecondary = md2_theme_dark_onSecondary,
+    secondaryContainer = md2_theme_dark_secondaryContainer,
+    onSecondaryContainer = md2_theme_dark_onSecondaryContainer,
+    tertiary = md2_theme_dark_tertiary,
+    onTertiary = md2_theme_dark_onTertiary,
+    tertiaryContainer = md2_theme_dark_tertiaryContainer,
+    onTertiaryContainer = md2_theme_dark_onTertiaryContainer,
+    error = md2_theme_dark_error,
+    errorContainer = md2_theme_dark_errorContainer,
+    onError = md2_theme_dark_onError,
+    onErrorContainer = md2_theme_dark_onErrorContainer,
+    background = md2_theme_dark_background,
+    onBackground = md2_theme_dark_onBackground,
+    surface = md2_theme_dark_surface,
+    onSurface = md2_theme_dark_onSurface,
+    surfaceVariant = md2_theme_dark_surfaceVariant,
+    onSurfaceVariant = md2_theme_dark_onSurfaceVariant,
+    outline = md2_theme_dark_outline,
+    inverseOnSurface = md2_theme_dark_inverseOnSurface,
+    inverseSurface = md2_theme_dark_inverseSurface,
+    inversePrimary = md2_theme_dark_inversePrimary,
+    surfaceTint = md2_theme_dark_surfaceTint,
+    outlineVariant = md2_theme_dark_outlineVariant,
+    scrim = md2_theme_dark_scrim,
+)
+
 @Composable
 fun WoofTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = false,
-    content: @Composable () -> Unit
+    customDarkColorScheme: ColorScheme = LightColors, // Specify your custom dark color scheme
+    customLightColorScheme: ColorScheme = DarkColors, // Specify your custom light color scheme
+    content: @Composable () -> Unit,
 ) {
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
-        darkTheme -> DarkColors
-        else -> LightColors
+        darkTheme -> customDarkColorScheme
+        else -> customLightColorScheme
     }
     val view = LocalView.current
     if (!view.isInEditMode) {

@@ -1,5 +1,7 @@
 package com.example.a202310212
-
+import com.example.a202310212.ui.theme.WoofTheme
+import com.example.a202310212.ui.theme.DarkColors2
+import com.example.a202310212.ui.theme.LightColors2
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -23,7 +25,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.a202310212.MainActivity.Companion.fusedLocationClient
 import com.example.a202310212.MainActivity.Companion.locationCallback
 import com.example.a202310212.MainActivity.Companion.locationRequest
-import com.example.a202310212.ui.theme.WoofTheme
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -142,7 +143,7 @@ class MainActivity : ComponentActivity() {
 
         // allows navigation between screens, with start destination of the home screen
         setContent {
-            WoofTheme {
+            WoofTheme (customDarkColorScheme = DarkColors2, customLightColorScheme = LightColors2) {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val navController = rememberNavController()
                     NavHost(navController = navController, startDestination = "homeScreen") {
