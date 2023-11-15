@@ -31,7 +31,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val LightColors = lightColorScheme(
+val LightColors1 = lightColorScheme(
     primary = md_theme_light_primary,
     onPrimary = md_theme_light_onPrimary,
     primaryContainer = md_theme_light_primaryContainer,
@@ -64,7 +64,7 @@ private val LightColors = lightColorScheme(
 )
 
 
-private val DarkColors = darkColorScheme(
+val DarkColors1 = darkColorScheme(
     primary = md_theme_dark_primary,
     onPrimary = md_theme_dark_onPrimary,
     primaryContainer = md_theme_dark_primaryContainer,
@@ -166,8 +166,8 @@ fun WoofTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = false,
-    customDarkColorScheme: ColorScheme = LightColors, // Specify your custom dark color scheme
-    customLightColorScheme: ColorScheme = DarkColors, // Specify your custom light color scheme
+    customDarkColorScheme: ColorScheme = LightColors1, // Specify your custom dark color scheme
+    customLightColorScheme: ColorScheme = DarkColors1, // Specify your custom light color scheme
     content: @Composable () -> Unit,
 ) {
     val colorScheme = when {

@@ -1,7 +1,4 @@
 package com.example.a202310212
-import com.example.a202310212.ui.theme.WoofTheme
-import com.example.a202310212.ui.theme.DarkColors2
-import com.example.a202310212.ui.theme.LightColors2
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -17,6 +14,10 @@ import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.app.NotificationCompat
 import androidx.navigation.compose.NavHost
@@ -25,6 +26,11 @@ import androidx.navigation.compose.rememberNavController
 import com.example.a202310212.MainActivity.Companion.fusedLocationClient
 import com.example.a202310212.MainActivity.Companion.locationCallback
 import com.example.a202310212.MainActivity.Companion.locationRequest
+import com.example.a202310212.ui.theme.DarkColors1
+import com.example.a202310212.ui.theme.DarkColors2
+import com.example.a202310212.ui.theme.LightColors1
+import com.example.a202310212.ui.theme.LightColors2
+import com.example.a202310212.ui.theme.WoofTheme
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -140,15 +146,27 @@ class MainActivity : ComponentActivity() {
         }
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.cancel(0)
-
+        var lcolorscheme = LightColors1
+        var dcolorscheme = DarkColors1
         // allows navigation between screens, with start destination of the home screen
         setContent {
-            WoofTheme (customDarkColorScheme = DarkColors2, customLightColorScheme = LightColors2) {
+            var isTheme1 by remember { mutableStateOf(false)}
+            if (isTheme1 == false) {
+                lcolorscheme = LightColors2
+                dcolorscheme = DarkColors2
+            } else {
+                lcolorscheme = LightColors1
+                dcolorscheme = DarkColors1
+            }
+            WoofTheme (customDarkColorScheme = lcolorscheme, customLightColorScheme = dcolorscheme) {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val navController = rememberNavController()
                     NavHost(navController = navController, startDestination = "homeScreen") {
                         composable("homeScreen") {
-                            HomeScreen(prefs = prefs!!, navigation = navController)
+                            HomeScreen(prefs = prefs!!, navigation = navController,
+                                updateTheme = {themeMode -> isTheme1 = themeMode},
+                                isTheme1 = isTheme1
+                            )
                         }
                         composable("displayTasks/{dayToDisplay}") { backStackEntry ->
                             val dayToDisplay = backStackEntry.arguments?.getString("dayToDisplay")

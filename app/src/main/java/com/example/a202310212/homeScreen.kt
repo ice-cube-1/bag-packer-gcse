@@ -35,7 +35,7 @@ import kotlinx.coroutines.launch
 // also had a "set home location" button that does some background processing but does not display
 // anything (should probably change this)
 @Composable
-fun HomeScreen(prefs: Prefs, navigation: NavController) {
+fun HomeScreen(prefs: Prefs, navigation: NavController, updateTheme: (Boolean) -> Unit, isTheme1: Boolean) {
     // remember variables to refresh page
     var goAddTask by remember { mutableStateOf(false) }
     var goViewList by remember { mutableIntStateOf(-1) }
@@ -80,6 +80,7 @@ fun HomeScreen(prefs: Prefs, navigation: NavController) {
             }
             Spacer(modifier = Modifier.weight(1f))
             Button(onClick = {
+                updateTheme(!isTheme1)
                 // sets the snackbar message
                 snackbarMessage = if (prefs.latitudeCurrent.toDouble() == 0.0) {
                     "Allow location permissions in settings"
