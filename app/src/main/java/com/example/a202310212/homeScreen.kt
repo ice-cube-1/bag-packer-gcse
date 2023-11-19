@@ -13,6 +13,7 @@ import androidx.compose.material.Snackbar
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -27,6 +28,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.a202310212.ui.theme.md2_theme_light_primary
+import com.example.a202310212.ui.theme.md3_theme_light_primary
+import com.example.a202310212.ui.theme.md_theme_light_primary
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -35,7 +39,7 @@ import kotlinx.coroutines.launch
 // also had a "set home location" button that does some background processing but does not display
 // anything (should probably change this)
 @Composable
-fun HomeScreen(prefs: Prefs, navigation: NavController, updateTheme: (Boolean) -> Unit, isTheme1: Boolean) {
+fun HomeScreen(prefs: Prefs, navigation: NavController, updateTheme: (Int) -> Unit, isTheme1: Int) {
     // remember variables to refresh page
     var goAddTask by remember { mutableStateOf(false) }
     var goViewList by remember { mutableIntStateOf(-1) }
@@ -63,14 +67,21 @@ fun HomeScreen(prefs: Prefs, navigation: NavController, updateTheme: (Boolean) -
         // displays a button for each day that will update "goViewList" with the day to view on press
         for (i in 0..6) {
             ElevatedButton(onClick = { goViewList = i }) {
-                Text(daysOfWeek[i], modifier = Modifier.padding(4.dp), color = MaterialTheme.colorScheme.onSecondaryContainer)
+                Text(
+                    daysOfWeek[i],
+                    modifier = Modifier.padding(4.dp),
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
                 Spacer(modifier = Modifier.weight(1f))
             }
         }
         Spacer(modifier = Modifier.weight(1f))
         // row with the add task button and a button that sets the home location in sharedPreferences
         Row {
-            IconButton(onClick = { goAddTask = true } ,modifier = Modifier.background(color = MaterialTheme.colorScheme.primaryContainer)) {
+            IconButton(
+                onClick = { goAddTask = true },
+                modifier = Modifier.background(color = MaterialTheme.colorScheme.primaryContainer)
+            ) {
                 Icon(
                     Icons.Filled.Add,
                     contentDescription = "Add Task",
@@ -79,37 +90,64 @@ fun HomeScreen(prefs: Prefs, navigation: NavController, updateTheme: (Boolean) -
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
-            Button(onClick = {
-                updateTheme(!isTheme1)
-                // sets the snackbar message
-                snackbarMessage = if (prefs.latitudeCurrent.toDouble() == 0.0) {
-                    "Allow location permissions in settings"
-                } else if ((kotlin.math.abs(prefs.latitude.toDouble() - prefs.latitudeCurrent) < 0.0005) && (kotlin.math.abs(
-                        prefs.longitude.toDouble() - prefs.longitudeCurrent
-                    ) < 0.0005)
-                ) {
-                    "You are already at your home location"
-                } else {
-                    "Home location set"
-                }
-                prefs.latitude = prefs.latitudeCurrent
-                prefs.longitude = prefs.longitudeCurrent
-                // makes the snackbar visible for 1 sec
-                snackbarVisible = true
-                coroutineScope.launch {
-                    delay(3000)
-                    snackbarVisible = false
-                }
-            },
-                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.primaryContainer)) {
+            IconButton(onClick = {
+                updateTheme(0)
+            }) {
+                Icon(
+                    Icons.Filled.Favorite, contentDescription = null, tint = md_theme_light_primary
+                )
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            IconButton(onClick = {
+                updateTheme(1)
+            }) {
+                Icon(
+                    Icons.Filled.Favorite, contentDescription = null, tint = md2_theme_light_primary
+                )
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            IconButton(onClick = {
+                updateTheme(2)
+            }) {
+                Icon(
+                    Icons.Filled.Favorite, contentDescription = null, tint = md3_theme_light_primary
+                )
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            Button(
+                onClick = {
+                    // sets the snackbar message
+                    snackbarMessage = if (prefs.latitudeCurrent.toDouble() == 0.0) {
+                        "Allow location permissions in settings"
+                    } else if ((kotlin.math.abs(prefs.latitude.toDouble() - prefs.latitudeCurrent) < 0.0005) && (kotlin.math.abs(
+                            prefs.longitude.toDouble() - prefs.longitudeCurrent
+                        ) < 0.0005)
+                    ) {
+                        "You are already at your home location"
+                    } else {
+                        "Home location set"
+                    }
+                    prefs.latitude = prefs.latitudeCurrent
+                    prefs.longitude = prefs.longitudeCurrent
+                    // makes the snackbar visible for 1 sec
+                    snackbarVisible = true
+                    coroutineScope.launch {
+                        delay(3000)
+                        snackbarVisible = false
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.primaryContainer)
+            ) {
                 Text("Set Home Location", color = MaterialTheme.colorScheme.onPrimaryContainer)
             }
         }
     }
     // actually shows the snackbar
     if (snackbarVisible) {
-        Snackbar(modifier = Modifier.padding(16.dp), backgroundColor = MaterialTheme.colorScheme.onSurface, content = {
-            Text(snackbarMessage, color = MaterialTheme.colorScheme.surfaceVariant)
-        })
+        Snackbar(modifier = Modifier.padding(16.dp),
+            backgroundColor = MaterialTheme.colorScheme.onSurface,
+            content = {
+                Text(snackbarMessage, color = MaterialTheme.colorScheme.surfaceVariant)
+            })
     }
 }

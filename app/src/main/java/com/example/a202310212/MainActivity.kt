@@ -15,7 +15,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -28,8 +28,10 @@ import com.example.a202310212.MainActivity.Companion.locationCallback
 import com.example.a202310212.MainActivity.Companion.locationRequest
 import com.example.a202310212.ui.theme.DarkColors1
 import com.example.a202310212.ui.theme.DarkColors2
+import com.example.a202310212.ui.theme.DarkColors3
 import com.example.a202310212.ui.theme.LightColors1
 import com.example.a202310212.ui.theme.LightColors2
+import com.example.a202310212.ui.theme.LightColors3
 import com.example.a202310212.ui.theme.WoofTheme
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -150,21 +152,25 @@ class MainActivity : ComponentActivity() {
         var dcolorscheme = DarkColors1
         // allows navigation between screens, with start destination of the home screen
         setContent {
-            var isTheme1 by remember { mutableStateOf(false)}
-            if (isTheme1 == false) {
+            var isTheme1 by remember { mutableIntStateOf(0) }
+            if (isTheme1 == 0) {
+                lcolorscheme = LightColors1
+                dcolorscheme = DarkColors1
+            } else if (isTheme1 == 1) {
                 lcolorscheme = LightColors2
                 dcolorscheme = DarkColors2
             } else {
-                lcolorscheme = LightColors1
-                dcolorscheme = DarkColors1
+                lcolorscheme = LightColors3
+                dcolorscheme = DarkColors3
             }
             WoofTheme (customDarkColorScheme = lcolorscheme, customLightColorScheme = dcolorscheme) {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val navController = rememberNavController()
                     NavHost(navController = navController, startDestination = "homeScreen") {
                         composable("homeScreen") {
-                            HomeScreen(prefs = prefs!!, navigation = navController,
-                                updateTheme = {themeMode -> isTheme1 = themeMode},
+                            HomeScreen(
+                                prefs = prefs!!, navigation = navController,
+                                updateTheme = { themeMode -> isTheme1 = themeMode},
                                 isTheme1 = isTheme1
                             )
                         }
