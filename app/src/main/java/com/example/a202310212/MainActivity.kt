@@ -1,4 +1,5 @@
 package com.example.a202310212
+
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -13,6 +14,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -148,29 +150,38 @@ class MainActivity : ComponentActivity() {
         }
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.cancel(0)
-        var lcolorscheme = LightColors1
-        var dcolorscheme = DarkColors1
+        var lightColorScheme: ColorScheme
+        var darkColorScheme: ColorScheme
         // allows navigation between screens, with start destination of the home screen
         setContent {
-            var isTheme1 by remember { mutableIntStateOf(0) }
-            if (isTheme1 == 0) {
-                lcolorscheme = LightColors1
-                dcolorscheme = DarkColors1
-            } else if (isTheme1 == 1) {
-                lcolorscheme = LightColors2
-                dcolorscheme = DarkColors2
-            } else {
-                lcolorscheme = LightColors3
-                dcolorscheme = DarkColors3
+            var isTheme1 by remember { mutableIntStateOf(prefs!!.colorScheme) }
+            when (isTheme1) {
+                0 -> {
+                    lightColorScheme = LightColors1
+                    darkColorScheme = DarkColors1
+                }
+
+                1 -> {
+                    lightColorScheme = LightColors2
+                    darkColorScheme = DarkColors2
+                }
+
+                else -> {
+                    lightColorScheme = LightColors3
+                    darkColorScheme = DarkColors3
+                }
             }
-            WoofTheme (customDarkColorScheme = lcolorscheme, customLightColorScheme = dcolorscheme) {
+            WoofTheme(
+                customDarkColorScheme = lightColorScheme, customLightColorScheme = darkColorScheme
+            ) {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val navController = rememberNavController()
                     NavHost(navController = navController, startDestination = "homeScreen") {
                         composable("homeScreen") {
                             HomeScreen(
-                                prefs = prefs!!, navigation = navController,
-                                updateTheme = { themeMode -> isTheme1 = themeMode},
+                                prefs = prefs!!,
+                                navigation = navController,
+                                updateTheme = { themeMode -> isTheme1 = themeMode },
                                 isTheme1 = isTheme1
                             )
                         }
