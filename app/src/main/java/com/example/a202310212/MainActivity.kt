@@ -172,7 +172,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
             WoofTheme(
-                customDarkColorScheme = lightColorScheme, customLightColorScheme = darkColorScheme
+                customDarkColorScheme = darkColorScheme, customLightColorScheme = lightColorScheme
             ) {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val navController = rememberNavController()

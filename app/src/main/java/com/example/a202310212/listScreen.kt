@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Checkbox
@@ -14,7 +15,6 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -53,17 +54,17 @@ fun TaskItem(
         Spacer(modifier = Modifier.weight(1f))
         if (recurring) {
             Icon(
-                Icons.Filled.Refresh,
+                painter = painterResource(id = R.drawable.recurring_icon_1),
                 contentDescription = "Recurring",
-                modifier = Modifier.padding(12.dp),
-                tint = MaterialTheme.colorScheme.onBackground
+                modifier = Modifier.padding(12.dp).size(24.dp),
+                tint = MaterialTheme.colorScheme.onBackground,
             )
         }
         IconButton(onClick = onClose) {
             Icon(
                 Icons.Filled.Close,
                 contentDescription = "Close",
-                tint = MaterialTheme.colorScheme.onBackground
+                tint = MaterialTheme.colorScheme.onBackground,
             )
         }
 

@@ -63,7 +63,7 @@ fun HomeScreen(prefs: Prefs, navigation: NavController, updateTheme: (Int) -> Un
         }
     }
     Column(modifier = Modifier.padding(16.dp)) {
-        Text("Lists", fontSize = 20.sp, color = MaterialTheme.colorScheme.onBackground)
+        Text("Days", fontSize = 20.sp, color = MaterialTheme.colorScheme.onBackground)
         // displays a button for each day that will update "goViewList" with the day to view on press
         for (i in 0..6) {
             ElevatedButton(onClick = { goViewList = i }) {
