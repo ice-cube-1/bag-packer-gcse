@@ -16,8 +16,4 @@ The first time in a day the user leaves the area near the location they set as h
 
 ___
 
-Current issues / features to be implemented (in order of priority)
- - #12: Adding colour schemes / icon / correct app name
- - #13: Notification goes to tasks list page
- - #14: Location works in background
- - #03: Tasks reappearing on screen rotate - such an edge case it should be fine
+There's a few known issues that I'm not going to fix, I'll add more details on them here soon
