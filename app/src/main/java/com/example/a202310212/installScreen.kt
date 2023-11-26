@@ -63,7 +63,7 @@ fun InstallScreen(navigation: NavController, prefs: Prefs) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Add description text box
+        // description text box
         Text(
             text = "Use this app to help with your everyday tasks." +
                     "Our app allows you to add items that they need to bring either weekly or as a one-off and mark them as completed." +
@@ -74,7 +74,7 @@ fun InstallScreen(navigation: NavController, prefs: Prefs) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Add additional info text box
+        // additional info text box
         Text(
             text = "Each day of the week is laid out beneath 'Lists'." +
                     "Click onto each day to view and add to your daily lists: you can add, remove, edit, and check off any item." +

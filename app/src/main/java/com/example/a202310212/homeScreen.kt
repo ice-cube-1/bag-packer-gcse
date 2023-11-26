@@ -39,7 +39,7 @@ import kotlinx.coroutines.launch
 // also had a "set home location" button that does some background processing but does not display
 // anything (should probably change this)
 @Composable
-fun HomeScreen(prefs: Prefs, navigation: NavController, updateTheme: (Int) -> Unit, isTheme1: Int) {
+fun HomeScreen(prefs: Prefs, navigation: NavController, updateTheme: (Int) -> Unit) {
     // remember variables to refresh page
     var goAddTask by remember { mutableStateOf(false) }
     var goViewList by remember { mutableIntStateOf(-1) }
@@ -76,8 +76,8 @@ fun HomeScreen(prefs: Prefs, navigation: NavController, updateTheme: (Int) -> Un
             }
         }
         Spacer(modifier = Modifier.weight(1f))
-        // row with the add task button and a button that sets the home location in sharedPreferences
         Row {
+            // add task button
             IconButton(
                 onClick = { goAddTask = true },
                 modifier = Modifier.background(color = MaterialTheme.colorScheme.primaryContainer)
@@ -89,6 +89,8 @@ fun HomeScreen(prefs: Prefs, navigation: NavController, updateTheme: (Int) -> Un
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
+            // three icon buttons that each update the theme to have the primary colour of the icon
+            // the theme will also be updated if the user switches to dark mode
             Spacer(modifier = Modifier.weight(1f))
             IconButton(onClick = {
                 updateTheme(0)
@@ -117,6 +119,7 @@ fun HomeScreen(prefs: Prefs, navigation: NavController, updateTheme: (Int) -> Un
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
+            // set home location button
             Button(
                 onClick = {
                     // sets the snackbar message

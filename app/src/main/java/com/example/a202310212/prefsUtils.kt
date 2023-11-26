@@ -18,30 +18,40 @@ class Prefs(context: Context) {
     private var longPrefCurrent = "longPrefCurrent"
     private var colorSchemePref = "colorSchemePref"
     private var showInstallScreenPref = "showInstallScreenPref"
+    // all data about all tasks
     var tasksList: String?
         get() = preferences.getString(allDataPref, JSON.writeValueAsString(listOf<ItemToPack>()))
         set(value) = preferences.edit().putString(allDataPref, value).apply()
+    // what the current day is
     var currentDay: Int
         get() = preferences.getInt(dayPref, 0)
         set(value) = preferences.edit().putInt(dayPref, value).apply()
+    // if the user has been reminded today
     var remindedToday: Boolean
         get() = preferences.getBoolean(boolPref, false)
         set(value) = preferences.edit().putBoolean(boolPref, value).apply()
+    // home latitude
     var latitude: Float
         get() = preferences.getFloat(latPref, 0.0F)
         set(value) = preferences.edit().putFloat(latPref, value).apply()
+    // home longitude
     var longitude: Float
         get() = preferences.getFloat(longPref, 0.0F)
         set(value) = preferences.edit().putFloat(longPref, value).apply()
+    // current latitude - probably shouldn't be stored as a setting but other options
+    // were more complicated
     var latitudeCurrent: Float
         get() = preferences.getFloat(latPrefCurrent, 0.0F)
         set(value) = preferences.edit().putFloat(latPrefCurrent, value).apply()
+    // current longitude
     var longitudeCurrent: Float
         get() = preferences.getFloat(longPrefCurrent, 0.0F)
         set(value) = preferences.edit().putFloat(longPrefCurrent, value).apply()
+    // which of the 3 colour schemes
     var colorScheme: Int
         get() = preferences.getInt(colorSchemePref, 0)
         set(value) = preferences.edit().putInt(colorSchemePref, value).apply()
+    // if info screen should be shown before the home screen
     var showInstallScreen: Boolean
         get() = preferences.getBoolean(showInstallScreenPref, true)
         set(value) = preferences.edit().putBoolean(showInstallScreenPref, value).apply()

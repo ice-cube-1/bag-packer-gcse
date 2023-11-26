@@ -69,8 +69,9 @@ class MainActivity : ComponentActivity() {
         lateinit var locationCallback: LocationCallback
     }
 
-    // these shouldn't technically need to be here as they're suppressing warnings, but the code appears
-    // to work fine including on an older actual device
+    // these shouldn't technically need to be here as they're suppressing warnings, but they mean it
+    // won't work on older devices (why the kindle demo doesn't work as it runs too old a version of
+    // android (rest of the app works, just it'll always need location permissions)
     @SuppressLint("MissingPermission")
     @RequiresApi(Build.VERSION_CODES.S)
 
@@ -175,6 +176,8 @@ class MainActivity : ComponentActivity() {
                 customDarkColorScheme = darkColorScheme, customLightColorScheme = lightColorScheme
             ) {
                 Surface(modifier = Modifier.fillMaxSize()) {
+                    // sets up navigation between screens, start screen depends on if the user still wants
+                    // to see the intro screen
                     val navController = rememberNavController()
                     var startScreen = "homeScreen"
                     if (prefs!!.showInstallScreen) {
@@ -186,7 +189,6 @@ class MainActivity : ComponentActivity() {
                                 prefs = prefs!!,
                                 navigation = navController,
                                 updateTheme = { themeMode -> isTheme1 = themeMode },
-                                isTheme1 = isTheme1
                             )
                         }
                         composable("displayTasks/{dayToDisplay}") { backStackEntry ->

@@ -39,6 +39,7 @@ fun TaskItem(
     recurring: Boolean
 ) {
     Row {
+        // so the user can check off an item
         Checkbox(
             checked = checked, onCheckedChange = onCheckedChange,
             colors = CheckboxDefaults.colors(
@@ -52,6 +53,7 @@ fun TaskItem(
             color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier.weight(1f))
+        // displays recurring icon
         if (recurring) {
             Icon(
                 painter = painterResource(id = R.drawable.recurring_icon_1),
@@ -60,6 +62,7 @@ fun TaskItem(
                 tint = MaterialTheme.colorScheme.onBackground,
             )
         }
+        // displays close button
         IconButton(onClick = onClose) {
             Icon(
                 Icons.Filled.Close,
