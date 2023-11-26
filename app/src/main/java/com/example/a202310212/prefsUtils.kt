@@ -17,6 +17,7 @@ class Prefs(context: Context) {
     private var latPrefCurrent = "latPrefCurrent"
     private var longPrefCurrent = "longPrefCurrent"
     private var colorSchemePref = "colorSchemePref"
+    private var showInstallScreenPref = "showInstallScreenPref"
     var tasksList: String?
         get() = preferences.getString(allDataPref, JSON.writeValueAsString(listOf<ItemToPack>()))
         set(value) = preferences.edit().putString(allDataPref, value).apply()
@@ -41,6 +42,9 @@ class Prefs(context: Context) {
     var colorScheme: Int
         get() = preferences.getInt(colorSchemePref, 0)
         set(value) = preferences.edit().putInt(colorSchemePref, value).apply()
+    var showInstallScreen: Boolean
+        get() = preferences.getBoolean(showInstallScreenPref, true)
+        set(value) = preferences.edit().putBoolean(showInstallScreenPref, value).apply()
 }
 
 // these functions should be self-explanatory

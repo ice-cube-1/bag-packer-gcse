@@ -176,7 +176,11 @@ class MainActivity : ComponentActivity() {
             ) {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val navController = rememberNavController()
-                    NavHost(navController = navController, startDestination = "homeScreen") {
+                    var startScreen = "homeScreen"
+                    if (prefs!!.showInstallScreen) {
+                        startScreen = "installScreen"
+                    }
+                    NavHost(navController = navController, startDestination = startScreen) {
                         composable("homeScreen") {
                             HomeScreen(
                                 prefs = prefs!!,
@@ -189,6 +193,9 @@ class MainActivity : ComponentActivity() {
                             val dayToDisplay = backStackEntry.arguments?.getString("dayToDisplay")
                             val newDay = dayToDisplay!!.toInt()
                             DisplayTasks(prefs = prefs!!, navigation = navController, day = newDay)
+                        }
+                        composable("installScreen") {
+                            InstallScreen(navigation = navController, prefs=prefs!!)
                         }
                         composable("addTask") {
                             AddTask(prefs = prefs!!, navigation = navController)
