@@ -94,7 +94,7 @@ fun HomeScreen(prefs: Prefs, navigation: NavController, updateTheme: (Int) -> Un
             Spacer(modifier = Modifier.weight(1f))
             IconButton(onClick = {
                 updateTheme(0)
-                prefs.colorScheme=0
+                prefs.colorScheme = 0
             }) {
                 Icon(
                     Icons.Filled.Favorite, contentDescription = null, tint = md_theme_light_primary
@@ -103,7 +103,7 @@ fun HomeScreen(prefs: Prefs, navigation: NavController, updateTheme: (Int) -> Un
             Spacer(modifier = Modifier.weight(1f))
             IconButton(onClick = {
                 updateTheme(1)
-                prefs.colorScheme=1
+                prefs.colorScheme = 1
             }) {
                 Icon(
                     Icons.Filled.Favorite, contentDescription = null, tint = md2_theme_light_primary
@@ -112,7 +112,7 @@ fun HomeScreen(prefs: Prefs, navigation: NavController, updateTheme: (Int) -> Un
             Spacer(modifier = Modifier.weight(1f))
             IconButton(onClick = {
                 updateTheme(2)
-                prefs.colorScheme=2
+                prefs.colorScheme = 2
             }) {
                 Icon(
                     Icons.Filled.Favorite, contentDescription = null, tint = md3_theme_light_primary

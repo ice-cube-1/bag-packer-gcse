@@ -197,7 +197,7 @@ class MainActivity : ComponentActivity() {
                             DisplayTasks(prefs = prefs!!, navigation = navController, day = newDay)
                         }
                         composable("installScreen") {
-                            InstallScreen(navigation = navController, prefs=prefs!!)
+                            InstallScreen(navigation = navController, prefs = prefs!!)
                         }
                         composable("addTask") {
                             AddTask(prefs = prefs!!, navigation = navController)

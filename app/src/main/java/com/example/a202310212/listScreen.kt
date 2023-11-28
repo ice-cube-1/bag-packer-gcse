@@ -58,7 +58,9 @@ fun TaskItem(
             Icon(
                 painter = painterResource(id = R.drawable.recurring_icon_1),
                 contentDescription = "Recurring",
-                modifier = Modifier.padding(12.dp).size(24.dp),
+                modifier = Modifier
+                    .padding(12.dp)
+                    .size(24.dp),
                 tint = MaterialTheme.colorScheme.onBackground,
             )
         }
